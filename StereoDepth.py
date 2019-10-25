@@ -3,10 +3,7 @@ from sklearn.preprocessing import normalize
 import cv2
 import matplotlib.pyplot as plt
 import open3d as o3d
-
-
-
-
+import get_dims
 
 
 def CalculateStereoDisparity(imgL, imgR):
@@ -104,7 +101,7 @@ def XYZImageFromDisparity(depth_image):
 
 def PointCloudFromXYZ(xyz_image, depth_image):
     mask = depth_image > depth_image.min()
-    out_points = np.int16(np.clip(xyz_img[mask] * 10), -1, 1000)
+    out_points = np.int16(np.clip(xyz_image[mask] * 10), -1, 1000)
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(out_points)
     #o3d.visualization.draw_geometries([pcd])
@@ -120,8 +117,7 @@ def ExtractPositions(image_l, image_r, bounds_list):
     positions = []
 
     for bound in bounds_list:
-
-
+        print(bound)
         xyz_car_img = xyz_img[bound[0]:bound[1], bound[2]:bound[3]]
         h, w, _ = xyz_car_img.shape
         xyz_car_img = xyz_car_img[int(h/4):int(3*h/4), int(w/4):int(3*w/4)]
@@ -133,3 +129,23 @@ def ExtractPositions(image_l, image_r, bounds_list):
         positions.append(car_pos)
 
     return positions
+
+def main():
+
+    left_image_path = "/home/anthony/git/vehicle-detection/kitti/0000-left/000000.png"
+    right_image_path = "/home/anthony/git/vehicle-detection/kitti/0000-right/000000.png"
+    image_l = cv2.imread(left_image_path)
+    image_r = cv2.imread(right_image_path)
+
+    bounds_list = get_dims.get_obstacle_dims(left_image_path)
+
+    positions = ExtractPositions(image_l, image_r, bounds_list)
+
+    print(positions)
+
+if __name__ == "__main__":
+    main()
+
+
+
+
