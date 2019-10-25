@@ -1,8 +1,6 @@
-#from subprocess import Popen, PIPE
 import subprocess
 import sys
 import os
-
 
 # Class for encapsulating a single identified obstacle in an image.
 class Obstacle:
@@ -15,10 +13,10 @@ class Obstacle:
         # Which cropped image was it when it was extracted from the full image?
         self.image_no = image_no
         # Dimensions of the bounding box around the obstacle.
-        self.top = top
-        self.bot = bot
-        self.left = left
-        self.right = right
+        self.top = int(top)
+        self.bot = int(bot)
+        self.left = int(left)
+        self.right = int(right)
 
     def get_classification(self):
         return self.classification
@@ -49,7 +47,7 @@ def process_image(image_path):
 
     # Looking at lines 1-end to get our obstacles.
     lines = output.split("\n")[1:]
-    # Filter out empty strings (at end)
+    # Filter out empty strings (generally at end)
     lines = list(filter(None, lines))
     num_lines = len(lines)
 
@@ -73,15 +71,33 @@ def process_image(image_path):
 
     return obstacles
 
-def main():
+def get_obstacle_dims(left_image_path):
 
-    image_path = sys.argv[1]
-    obstacles = process_image(image_path)
+    obstacles = process_image(left_image_path)
+
+    print(obstacles)
+
+    dims_list = []
 
     for obstacle in obstacles:
-        #print(obstacle.get_dims())
-        print ('Image:{0} Dims:{1}'.format(obstacle.get_image_no(), obstacle.get_dims()))
+        dims_list.append(obstacle.get_dims())
 
-if __name__ == "__main__":
-    main()
+    return dims_list
+
+# def main():
+
+    # image_path = sys.argv[1]
+    # obstacles = process_image(image_path)
+    # dims_list = []
+    #
+    # for obstacle in obstacles:
+    #     dims_list.append(obstacle.get_dims())
+    #
+    # return dims_list
+
+    #for obstacle in obstacles:
+    #    print ('Image:{0} Dims:{1}'.format(obstacle.get_image_no(), obstacle.get_dims()))
+
+# if __name__ == "__main__":
+#     main()
 
