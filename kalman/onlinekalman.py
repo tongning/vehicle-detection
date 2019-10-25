@@ -52,12 +52,19 @@ class OnlineKalman:
             self.filtered_state_covariances.append(self.initial_state_covariance)
             return (initial_state_mean, self.initial_state_covariance)
         else:
-            new_mean, new_cov = (
-            self.kalman_filter.filter_update(
-                self.filtered_state_means[-1],
-                self.filtered_state_covariances[-1],
-                observation = [x, y, z])
-            )
+            if x is not None and y is not None and z is not None:
+                new_mean, new_cov = (
+                self.kalman_filter.filter_update(
+                    self.filtered_state_means[-1],
+                    self.filtered_state_covariances[-1],
+                    observation = [x, y, z])
+                )
+            else:
+                new_mean, new_cov = (
+                self.kalman_filter.filter_update(
+                    self.filtered_state_means[-1],
+                    self.filtered_state_covariances[-1])
+                )
             self.filtered_state_means.append(new_mean.tolist())
             self.filtered_state_covariances.append(new_cov)
             return (new_mean.tolist(), new_cov)
