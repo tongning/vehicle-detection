@@ -1,0 +1,87 @@
+#from subprocess import Popen, PIPE
+import subprocess
+import sys
+import os
+
+
+# Class for encapsulating a single identified obstacle in an image.
+class Obstacle:
+
+    def __init__(self, classification, prob, image_no, top, bot, left, right):
+        # What is it? A bicycle, a banana, a car?
+        self.classification = classification
+        # What is yolo's probability that it thinks it's this class?
+        self.prob = prob
+        # Which cropped image was it when it was extracted from the full image?
+        self.image_no = image_no
+        # Dimensions of the bounding box around the obstacle.
+        self.top = top
+        self.bot = bot
+        self.left = left
+        self.right = right
+
+    def get_classification(self):
+        return self.classification
+    def get_prob(self):
+        return self.prob
+    def get_image_no(self):
+        return self.image_no
+    def get_dims(self):
+        return (self.top, self.bot, self.left, self.right)
+
+# Process a single image and return a list of obstacle objects.
+def process_image(image_path):
+    base_path = "/home/anthony/darknet/"
+
+    # Have to change dirs because yolo(darknet) has to be run from within it's directory.
+    # Looks to be a known issue people are complaining about.
+    os.chdir(base_path)
+
+    # TODO: Suppress whatever output is 1,2,3 ... 106 yolo.
+    # TODO: When it's loading weights, can I hold that in memory for multiple image processes?
+    program_path = base_path + "darknet"
+    args_list = ["detect", base_path + "cfg/yolov3.cfg", base_path + "yolov3.weights", image_path]
+
+    # Get the output from our program and decode it into a UTF-8 string
+    output = subprocess.check_output([program_path] + args_list).decode('utf-8')
+
+    obstacles = []
+
+    # Looking at lines 1-end to get our obstacles.
+    lines = output.split("\n")[1:]
+    # Filter out empty strings (at end)
+    lines = list(filter(None, lines))
+    num_lines = len(lines)
+
+    # Create all the obstacle objects.
+    for i in range(0,num_lines,2):
+        first_line = lines[i]
+        second_line = lines[i+1]
+        first_split = first_line.split(": ")
+        second_split = second_line.split(",")
+
+        classification = first_split[0]
+        prob = float(first_split[1].strip("%")) * 0.01
+        image_no = second_split[1]
+        top = second_split[3]
+        bot = second_split[5]
+        left = second_split[7]
+        right = second_split[9]
+
+        obstacle = Obstacle(classification, prob, image_no, top, bot, left, right)
+        obstacles.append(obstacle)
+
+    return obstacles
+
+def main():
+
+    image_path = sys.argv[1]
+    obstacles = process_image(image_path)
+
+    for obstacle in obstacles:
+        #print(obstacle.get_dims())
+        print ('Image:{0} Dims:{1}'.format(obstacle.get_image_no(), obstacle.get_dims()))
+
+if __name__ == "__main__":
+    main()
+
