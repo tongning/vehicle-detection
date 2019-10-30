@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import os
+import numpy as np
 
 # Class for encapsulating a single identified obstacle in an image.
 class Obstacle:
@@ -75,8 +76,6 @@ def get_obstacle_dims(left_image_path):
 
     obstacles = process_image(left_image_path)
 
-    print(obstacles)
-
     dims_list = []
 
     for obstacle in obstacles:
@@ -84,6 +83,44 @@ def get_obstacle_dims(left_image_path):
 
     return dims_list
 
+def get_obstacle_info(left_image_path):
+
+    obstacles = process_image(left_image_path)
+
+    info_list = []
+
+    # Classifications that we care about
+    classifications = ["car", "truck", "bicycle", "person", "motorbike", "bus"]
+
+    for obstacle in obstacles:
+        if obstacle.classification in classifications:
+            six_tuple = (obstacle.top, obstacle.bot, obstacle.left, obstacle.right, obstacle.classification, obstacle.prob)
+            info_list.append(six_tuple)
+
+    return info_list
+
+def main():
+
+    # Creating a pickled representation of all the bounding boxes from a stream of ~300 images.
+    images_path = "/home/anthony/git/vehicle-detection/kitti/0010-left/"
+
+    info_list = []
+    left_files = os.listdir(images_path)
+
+    for file in left_files:
+        left_image_file_path = images_path + file
+        obstacles = get_obstacle_info(left_image_file_path)
+        info_list.append(obstacles)
+
+    nparray = np.array([np.array(obstacles) for obstacles in info_list])
+    np.save("bounds.pkl", nparray)
+
+if __name__ == "__main__":
+     main()
+
+
+
+# OLD MAIN (For printing obstacles from a single image)
 # def main():
 
     # image_path = sys.argv[1]
@@ -98,6 +135,5 @@ def get_obstacle_dims(left_image_path):
     #for obstacle in obstacles:
     #    print ('Image:{0} Dims:{1}'.format(obstacle.get_image_no(), obstacle.get_dims()))
 
-# if __name__ == "__main__":
-#     main()
+
 
