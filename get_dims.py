@@ -105,15 +105,17 @@ def main():
     images_path = "/home/anthony/git/vehicle-detection/kitti/0010-left/"
 
     info_list = []
-    left_files = os.listdir(images_path)
+    left_files = sorted(os.listdir(images_path))
+
 
     for file in left_files:
         left_image_file_path = images_path + file
         obstacles = get_obstacle_info(left_image_file_path)
         info_list.append(obstacles)
+        print(left_image_file_path)
 
     nparray = np.array([np.array(obstacles) for obstacles in info_list])
-    np.save("bounds.pkl", nparray)
+    np.save("/home/anthony/git/vehicle-detection/bounds.pkl", nparray, allow_pickle=True)
 
 if __name__ == "__main__":
      main()
