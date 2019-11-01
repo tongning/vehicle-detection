@@ -36,6 +36,9 @@ opt.line_width = 100    # doesn't seem to be working
 max_files = 100 # run on first 100 frames
 line_sets = [] # 3D bounding boxes
 
+fig, ax = plt.subplots()
+im = ax.imshow(cv2.imread(os.path.join(directory_l, '000000.png')))
+
 for i, filename in enumerate(sorted(os.listdir(directory_l))):
     if i > max_files:
         break
@@ -54,8 +57,10 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
         frame = Convert3D(filename_l, filename_r, info[i])
         # add point cloud
         pcd.points = o3d.utility.Vector3dVector(np.int16(frame.point_cloud * 10))
-        vis.add_geometry(pcd)
         # Use StereoDepth Conversions---------------------------------
+
+        if i == 0:
+            vis.add_geometry(pcd)
 
 
         # add bounding boxes-------------------------------------------
@@ -86,14 +91,17 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
 
         vis.poll_events()
         vis.update_renderer()
+        vis.update_geometry()
 
+        print(i)
 
         # Draw 2D image with 2D bounding boxes for debugging -------------------
         left_image = cv2.imread(filename_l)
         for bound in info[i]:
             if bound[4] == 'car' and float(bound[5]) > 0.9:
                 cv2.rectangle(left_image, (int(bound[2]), int(bound[0])), (int(bound[3]), int(bound[1])), (255, 0, 0), 2)
-        plt.imshow(left_image, vmin=-1, vmax = 50)
+        #plt.imshow(left_image, vmin=-1, vmax = 50)
+        im.set_data(left_image)
         plt.pause(0.1)
         plt.draw()
         # Draw 2D image with 2D bounding boxes for debugging -------------------
