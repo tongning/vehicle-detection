@@ -64,8 +64,8 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
         pcd.points = o3d.utility.Vector3dVector(np.int16(frame.point_cloud * 10))
         # Use StereoDepth Conversions---------------------------------
 
-        if i == 0:
-            vis.add_geometry(pcd)
+        #if i == 0:
+         #   vis.add_geometry(pcd)
 
 
         # add bounding boxes-------------------------------------------
@@ -83,6 +83,26 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
                      [0, 4], [1, 5], [2, 6], [3, 7]]
 
             colors = [[0, 1, 0] for i in range(len(lines))] # set bounding box color to green
+            line_set = o3d.geometry.LineSet()
+            line_set.points = o3d.utility.Vector3dVector(points)
+            line_set.lines = o3d.utility.Vector2iVector(lines)
+            line_set.colors = o3d.utility.Vector3dVector(colors)
+            vis.add_geometry(line_set) # add bounding box to visualizer
+            line_sets.append(line_set) # add it to line_sets so we can clear it at the next iteration
+        for pos in frame.positions_3D: #frame.positions_3D is a list of positions (multiple if we detect more than one car in the same frame)
+            # pos is a list of xyz, e.g. [0.45 3.10 5.0]
+            print(pos)
+            print("----------------")
+            #exit(0)
+            #pos = kalman.take_multiple_observations(pos)
+            
+            points = [[-10, -10, -10], [10, -10, -10], [-10, 10, -10], [10, 10, -10], [-10, -10, 10], [10, -10, 10],
+                      [-10, 10, 10], [10, 10, 10]]
+            points = (np.int16(points) + np.int16(np.array(pos)*10)).tolist()
+            lines = [[0, 1], [0, 2], [1, 3], [2, 3], [4, 5], [4, 6], [5, 7], [6, 7],
+                     [0, 4], [1, 5], [2, 6], [3, 7]]
+
+            colors = [[0, 0, 1] for i in range(len(lines))] # set bounding box color to green
             line_set = o3d.geometry.LineSet()
             line_set.points = o3d.utility.Vector3dVector(points)
             line_set.lines = o3d.utility.Vector2iVector(lines)
