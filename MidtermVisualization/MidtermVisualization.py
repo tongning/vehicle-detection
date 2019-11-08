@@ -2,6 +2,7 @@ from StereoDepth import Convert3D
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+from onlinekalman import MultiOnlineKalman
 from mpl_toolkits.mplot3d import Axes3D
 import cv2
 import open3d as o3d
@@ -61,8 +62,12 @@ opt.line_width = 100    # doesn't seem to be working
 max_files = 100 # run on first 100 frames
 bounding_boxes = [] # 3D bounding boxes
 
+
+kalman = MultiOnlineKalman()
+
 fig, ax = plt.subplots()
 im = ax.imshow(cv2.imread(os.path.join(directory_l, '000000.png')))
+
 
 for i, filename in enumerate(sorted(os.listdir(directory_l))):
     if i > max_files:
@@ -90,7 +95,7 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
 
 
         # add bounding boxes-------------------------------------------
-        for pos in frame.positions_3D: #frame.positions_3D is a list of positions (multiple if we detect more than one car in the same frame)
+        for pos in kalman.take_multiple_observations(frame.positions_3D): #frame.positions_3D is a list of positions (multiple if we detect more than one car in the same frame)
             # pos is a list of xyz, e.g. [0.45 3.10 5.0]
             bbox = bounding_box(pos)
             vis.add_geometry(bbox) # add bounding box to visualizer

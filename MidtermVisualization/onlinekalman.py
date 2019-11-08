@@ -26,7 +26,7 @@ class MultiOnlineKalman:
         
         return corrected_results
     
-    def find_matching_filter_index(self, observation, taken_filter_indices, distance_cap=40):
+    def find_matching_filter_index(self, observation, taken_filter_indices, distance_cap=10):
         closest_index = None
         closest_dist = math.inf
 
@@ -41,6 +41,8 @@ class MultiOnlineKalman:
         
         if closest_index is not None:
             taken_filter_indices.append(closest_index)
+
+        print("Closest dist: {}".format(closest_dist))
         
         return closest_index
 
