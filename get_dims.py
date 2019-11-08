@@ -58,6 +58,8 @@ def process_image(image_path):
         second_line = lines[i+1]
         first_split = first_line.split(": ")
         second_split = second_line.split(",")
+        print(first_split)
+        print(second_split)
 
         classification = first_split[0]
         prob = float(first_split[1].strip("%")) * 0.01
@@ -93,29 +95,34 @@ def get_obstacle_info(left_image_path):
     classifications = ["car", "truck", "bicycle", "person", "motorbike", "bus"]
 
     for obstacle in obstacles:
-        if obstacle.classification in classifications:
-            six_tuple = (obstacle.top, obstacle.bot, obstacle.left, obstacle.right, obstacle.classification, obstacle.prob)
-            info_list.append(six_tuple)
+        #if obstacle.classification in classifications:
+        six_tuple = (obstacle.top, obstacle.bot, obstacle.left, obstacle.right, obstacle.classification, obstacle.prob)
+        info_list.append(six_tuple)
 
     return info_list
 
 def main():
 
+    #images_path = sys.argv[1]
+
+    # TODO: BUG at 0000-left/000016.png. For some reason outputs a car without dimensions print...
     # Creating a pickled representation of all the bounding boxes from a stream of ~300 images.
-    images_path = "/home/anthony/git/vehicle-detection/kitti/0010-left/"
+    for i in range(11, 15):
+        images_path = "/home/anthony/git/vehicle-detection/kitti/00{:02d}-left/".format(i)
+        #images_path = "/home/anthony/git/vehicle-detection/kitti/0010-left/"
 
-    info_list = []
-    left_files = sorted(os.listdir(images_path))
+        info_list = []
+        left_files = sorted(os.listdir(images_path))
 
+        for file in left_files:
+            left_image_file_path = images_path + file
+            obstacles = get_obstacle_info(left_image_file_path)
+            info_list.append(obstacles)
+            print(left_image_file_path)
 
-    for file in left_files:
-        left_image_file_path = images_path + file
-        obstacles = get_obstacle_info(left_image_file_path)
-        info_list.append(obstacles)
-        print(left_image_file_path)
-
-    nparray = np.array([np.array(obstacles) for obstacles in info_list])
-    np.save("/home/anthony/git/vehicle-detection/bounds.pkl", nparray, allow_pickle=True)
+        nparray = np.array([np.array(obstacles) for obstacles in info_list])
+        save_path = "/home/anthony/git/vehicle-detection/" + images_path.split("/")[-2] + ".pyc"
+        np.save(save_path, nparray, allow_pickle=True)
 
 if __name__ == "__main__":
      main()
