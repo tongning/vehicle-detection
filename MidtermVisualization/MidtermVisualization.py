@@ -17,6 +17,31 @@ import open3d as o3d
 
 
 
+
+def bounding_box(position_3d, alpha=0, bbox_size = (10, 10, 10)):
+    # pos is a list of xyz, e.g. [0.45 3.10 5.0]
+    points = [[-bbox_size[0], -bbox_size[1], -bbox_size[2]],
+            [bbox_size[0], -bbox_size[1], -bbox_size[2]],
+            [-bbox_size[0], bbox_size[1], -bbox_size[2]],
+            [bbox_size[0], bbox_size[1], -bbox_size[2]],
+            [-bbox_size[0], -bbox_size[1], bbox_size[2]],
+            [bbox_size[0], -bbox_size[1], bbox_size[2]],
+            [-bbox_size[0], bbox_size[1], bbox_size[2]],
+            [bbox_size[0], bbox_size[1], bbox_size[2]]]
+    points = (np.int16(points) + 10*np.int16(np.array(pos))).tolist()
+    lines = [[0, 1], [0, 2], [1, 3], [2, 3], [4, 5], [4, 6], [5, 7], [6, 7],
+             [0, 4], [1, 5], [2, 6], [3, 7]]
+
+    colors = [[0, 1, 0] for i in range(len(lines))] # set bounding box color to green
+    line_set = o3d.geometry.LineSet()
+    line_set.points = o3d.utility.Vector3dVector(points)
+    line_set.lines = o3d.utility.Vector2iVector(lines)
+    line_set.colors = o3d.utility.Vector3dVector(colors)
+    return line_set
+
+
+
+
 current_directory = os.getcwd()
 info = np.load(current_directory + '/../0010-left-info.pyc', allow_pickle=True)
 directory_l = current_directory + '/../data_tracking_image_2/training/image_02/0010/'
@@ -34,7 +59,7 @@ opt.line_width = 100    # doesn't seem to be working
 
 
 max_files = 100 # run on first 100 frames
-line_sets = [] # 3D bounding boxes
+bounding_boxes = [] # 3D bounding boxes
 
 fig, ax = plt.subplots()
 im = ax.imshow(cv2.imread(os.path.join(directory_l, '000000.png')))
@@ -48,8 +73,8 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
         filename_r = os.path.join(directory_r, filename)
 
         # clear old bounding boxes --------
-        for line_set in line_sets:
-            vis.remove_geometry(line_set)
+        for bbox in bounding_boxes:
+            vis.remove_geometry(bbox)
         # clear old bounding boxes --------
 
 
@@ -60,25 +85,16 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
         # Use StereoDepth Conversions---------------------------------
 
         if i == 0:
+            # Add point cloud at first step, otherwise update
             vis.add_geometry(pcd)
 
 
         # add bounding boxes-------------------------------------------
         for pos in frame.positions_3D: #frame.positions_3D is a list of positions (multiple if we detect more than one car in the same frame)
             # pos is a list of xyz, e.g. [0.45 3.10 5.0]
-            points = [[-10, -10, -10], [10, -10, -10], [-10, 10, -10], [10, 10, -10], [-10, -10, 10], [10, -10, 10],
-                      [-10, 10, 10], [10, 10, 10]]
-            points = (np.int16(points) + np.int16(np.array(pos)*10)).tolist()
-            lines = [[0, 1], [0, 2], [1, 3], [2, 3], [4, 5], [4, 6], [5, 7], [6, 7],
-                     [0, 4], [1, 5], [2, 6], [3, 7]]
-
-            colors = [[0, 1, 0] for i in range(len(lines))] # set bounding box color to green
-            line_set = o3d.geometry.LineSet()
-            line_set.points = o3d.utility.Vector3dVector(points)
-            line_set.lines = o3d.utility.Vector2iVector(lines)
-            line_set.colors = o3d.utility.Vector3dVector(colors)
-            vis.add_geometry(line_set) # add bounding box to visualizer
-            line_sets.append(line_set) # add it to line_sets so we can clear it at the next iteration
+            bbox = bounding_box(pos)
+            vis.add_geometry(bbox) # add bounding box to visualizer
+            bounding_boxes.append(bbox) # add it to line_sets so we can clear it at the next iteration
         # add bounding boxes-------------------------------------------
 
 
