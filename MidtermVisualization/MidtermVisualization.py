@@ -42,12 +42,14 @@ def bounding_box(position_3d, alpha=0, bbox_size = (10, 10, 10)):
 
 
 
-
 current_directory = os.getcwd()
 info = np.load(current_directory + '/../0010-left-info.pyc', allow_pickle=True)
-directory_l = current_directory + '/../data_tracking_image_2/training/image_02/0010/'
-directory_r = current_directory + '/../data_tracking_image_2/training/image_03/0010/'
-
+info_labels = np.load(current_directory + '/../dims_labels.npy')
+print(info_labels)
+#directory_l = current_directory + '/../data_tracking_image_2/training/image_02/0010/'
+#directory_r = current_directory + '/../data_tracking_image_2/training/image_03/0010/'
+directory_l = current_directory + '/../kitti/0010-left/'
+directory_r = current_directory + '/../kitti/0010-right/'
 
 vis = o3d.visualization.Visualizer()
 pcd = o3d.geometry.PointCloud()
@@ -121,6 +123,9 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
         for bound in info[i]:
             if bound[4] == 'car' and float(bound[5]) > 0.9:
                 cv2.rectangle(left_image, (int(bound[2]), int(bound[0])), (int(bound[3]), int(bound[1])), (255, 0, 0), 2)
+        # Ground truth 2D bounding box.
+        for label in info_labels[i]:
+            cv2.rectangle(left_image, (int(label[3]), int(label[1])), (int(label[4]), int(label[2])), (0, 255, 0), 2)
         #plt.imshow(left_image, vmin=-1, vmax = 50)
         im.set_data(left_image)
         plt.pause(0.1)
