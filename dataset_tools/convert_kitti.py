@@ -1,23 +1,47 @@
 import os
+import sys
 
-in_dir =  "/Users/ericchan/vehicle-detection/KITTI_2012_Detection/data_object_image_2/training/label_2"
-out_dir = "/Users/ericchan/vehicle-detection/KITTI_2012_Detection/data_object_image_2/training_a/label_2"
-os.makedirs(out_dir, exist_ok = True)
+def convert_kitti(in_dir):
+    labels = sorted(os.listdir(in_dir))
+    for label in labels:
+        in_label = os.path.join(in_dir, label)
 
-labels = sorted(os.listdir(in_dir))
 
-for label in labels:
-    in_label = os.path.join(in_dir, label)
-    out_label = os.path.join(out_dir, label)
+        with open (in_label, 'r') as in_file:
+            out_lines = []
 
-    with open (in_label, 'r') as in_file:
-        with open (out_label, 'w+') as out_file:
             for line in in_file.readlines():
                 line_list = line.split(' ')
-                if line_list[0] == "Car":
+
+                if line_list[0] == "Pedestrian" or line_list[0] == "Cyclist":
+                    out_lines.append(' '.join(line_list))
+                elif line_list[0] == "Car" or line_list[0] == "Truck" or line_list[0] == "Van":
                     pi = 3.14159
-                    #print(line_list)
-                    #alpha = int(round((float(line_list[3])+pi)*7/(2*pi)))
-                    line_list[0] = "Car_" + str(line_list[3])
-                    out_file.write(' '.join(line_list))
-                    print(line_list)
+                    range = pi/16
+                    alpha = float(line_list[3])
+
+                    if abs(alpha - pi/2) <= range or abs(alpha + pi/2) <= range:
+                        angle = 0
+                    elif abs(alpha - 2*pi/3) <= range or abs(alpha + pi/3) <= range:
+                        angle = 1
+                    elif abs(alpha - 0) <= range or pi - alpha <= range or alpha + pi <= range:
+                        angle = 2
+                    elif abs(alpha - pi/3) <= range or abs(alpha + 2*pi/3) <= range:
+                        angle = 3
+
+                    if line_list[0] == "Van":
+                        line_list[0] = "Car"
+
+                    line_list[0] += "_" + str(angle)
+                    out_lines.append(' '.join(line_list))
+
+        with open(in_label, 'w') as out_file:
+            for line in out_lines:
+                out_file.write(line)
+
+def main(argv):
+    convert_kitti(argv[0])
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
