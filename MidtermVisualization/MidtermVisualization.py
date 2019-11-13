@@ -6,6 +6,7 @@ from onlinekalman import MultiOnlineKalman
 from mpl_toolkits.mplot3d import Axes3D
 import cv2
 import open3d as o3d
+import copy
 
 #
 # To use: Just run python 'MidtermVisualization.py'
@@ -43,7 +44,8 @@ kalman = MultiOnlineKalman()
 fig, ax = plt.subplots()
 im = ax.imshow(cv2.imread(os.path.join(directory_l, '000000.png')))
 
-
+no_kalman_out_file = open('nokalmanbbox.txt', 'w')
+kalman_out_file = open('kalmanbbox.txt', 'w')
 for i, filename in enumerate(sorted(os.listdir(directory_l))):
     if i > max_files:
         break
@@ -62,10 +64,37 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
         frame = Convert3D(filename_l, filename_r, info[i])
         # add point cloud
         pcd.points = o3d.utility.Vector3dVector(np.int16(frame.point_cloud * 10))
+
+        #print(frame.point_cloud.shape[0])
+        #image_colors_depth = np.full((frame.point_cloud.shape[0], 3), 100.)
+        image_colors_depth = frame.point_cloud
+        image_colors_depth[:,0] = image_colors_depth[:,2]/50 %1
+        image_colors_depth[:,1] = image_colors_depth[:,2]/25 %1
+        image_colors_depth[:,2] = image_colors_depth[:,2]/12 %1
+        #image_colors_depth[:,2] = 0.5
+        #print(image_colors_depth)
+        #exit(0)
+        '''
+        for point_index in range(0, frame.point_cloud.shape[0]):
+            point_x = frame.point_cloud[point_index][0]
+            point_y = frame.point_cloud[point_index][1]
+            point_z = frame.point_cloud[point_index][2]
+            x_color = point_x*1000 % 1.0
+            y_color = point_y*1000 % 1.0
+            z_color = point_z % 1.0
+            image_colors_depth[point_index][0] = x_color
+            image_colors_depth[point_index][1] = y_color
+            image_colors_depth[point_index][2] = z_color
+        '''
+
+        #print(image_colors_depth.shape)
+        #print(image_colors_depth)
+        #exit(0)
+        pcd.colors = o3d.utility.Vector3dVector(np.float64(image_colors_depth))
         # Use StereoDepth Conversions---------------------------------
 
-        #if i == 0:
-         #   vis.add_geometry(pcd)
+        if i == 0:
+            vis.add_geometry(pcd)
 
 
         # add bounding boxes-------------------------------------------
@@ -79,6 +108,7 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
             points = [[-10, -10, -10], [10, -10, -10], [-10, 10, -10], [10, 10, -10], [-10, -10, 10], [10, -10, 10],
                       [-10, 10, 10], [10, 10, 10]]
             points = (np.int16(points) + np.int16(np.array(pos)*10)).tolist()
+            kalman_out_file.write("{}\n".format(points))
             lines = [[0, 1], [0, 2], [1, 3], [2, 3], [4, 5], [4, 6], [5, 7], [6, 7],
                      [0, 4], [1, 5], [2, 6], [3, 7]]
 
@@ -99,10 +129,12 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
             points = [[-10, -10, -10], [10, -10, -10], [-10, 10, -10], [10, 10, -10], [-10, -10, 10], [10, -10, 10],
                       [-10, 10, 10], [10, 10, 10]]
             points = (np.int16(points) + np.int16(np.array(pos)*10)).tolist()
+            no_kalman_out_file.write("{}\n".format(points))
+            
             lines = [[0, 1], [0, 2], [1, 3], [2, 3], [4, 5], [4, 6], [5, 7], [6, 7],
                      [0, 4], [1, 5], [2, 6], [3, 7]]
 
-            colors = [[0, 0, 1] for i in range(len(lines))] # set bounding box color to green
+            colors = [[0, 0, 1] for i in range(len(lines))] # set bounding box color to blue
             line_set = o3d.geometry.LineSet()
             line_set.points = o3d.utility.Vector3dVector(points)
             line_set.lines = o3d.utility.Vector2iVector(lines)

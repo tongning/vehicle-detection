@@ -49,7 +49,7 @@ class Convert3D:
 
         wls_filter = cv2.ximgproc.createDisparityWLSFilter(matcher_left=left_matcher)
         wls_filter.setLambda(lmbda)
-        wls_filter.setSigmaColor(sigma)
+        wls_filter.setSigma(sigma)
 
         displ = left_matcher.compute(self.img_l, self.img_r).astype(np.float32)/16.0
         dispr = right_matcher.compute(self.img_r, self.img_l).astype(np.float32)/16.0
@@ -109,11 +109,16 @@ class Convert3D:
             [   0.,            0.,            0.,          680.05186262],
             [   0.,            0.,           -1.87703644,    0.,        ]])
 
+        print("Depth image size: {}".format(self.depth_img.shape))
         points = cv2.reprojectImageTo3D(self.depth_img, Q)
         return points
 
     def PointCloud(self):
         mask = self.depth_img > self.depth_img.min()
+        # mask the original images here to get real world color
+
+
+        
         #out_points = np.int16(self.xyz_img[mask] * 10)
         return self.xyz_img[mask]
         #pcd = o3d.geometry.PointCloud()
