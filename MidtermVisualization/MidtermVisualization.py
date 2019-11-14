@@ -39,7 +39,7 @@ def bounding_box(pos, color, alpha=0, bbox_size = (10, 10, 10)):
     lines = [[0, 1], [0, 2], [1, 3], [2, 3], [4, 5], [4, 6], [5, 7], [6, 7],
              [0, 4], [1, 5], [2, 6], [3, 7]]
 
-    # Set color of bounding box. Green for ground truth, blue for prediction.
+    # Set color of bounding box. Green for ground truth, blue for prediction w/ filter, red is prediction without filter
     colors = [color for i in range(len(lines))]
     line_set = o3d.geometry.LineSet()
     line_set.points = o3d.utility.Vector3dVector(points)
@@ -97,14 +97,25 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
 
         if i == 0:
             # Add point cloud at first step, otherwise update
-            vis.add_geometry(pcd)
+            #vis.add_geometry(pcd)
+            pass
+
+            # add bounding boxes-------------------------------------------
+        for pos in frame.positions_3D:  # frame.positions_3D is a list of positions (multiple if we detect more than one car in the same frame)
+            # pos is a list of xyz, e.g. [0.45 3.10 5.0]
+            color = [1, 0, 0]
+            print("Non-kalman 3D positions: %d" % i)
+            print(pos)
+            bbox = bounding_box(pos, color)
+            vis.add_geometry(bbox)  # add bounding box to visualizer
+            bounding_boxes.append(bbox)  # add it to line_sets so we can clear it at the next iteration
+        # add bounding boxes-------------------------------------------
 
 
         # add bounding boxes-------------------------------------------
         for pos in kalman.take_multiple_observations(frame.positions_3D): #frame.positions_3D is a list of positions (multiple if we detect more than one car in the same frame)
             # pos is a list of xyz, e.g. [0.45 3.10 5.0]
             color = [0, 0, 1]
-            print(pos)
             bbox = bounding_box(pos, color)
             vis.add_geometry(bbox) # add bounding box to visualizer
             bounding_boxes.append(bbox) # add it to line_sets so we can clear it at the next iteration
@@ -115,7 +126,7 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
             # [0] alpha, [5] 3d_height, [6] 3d_width, [7] 3d_length, [8] x, [9] y, [10] z
             print(label)
             # TODO: Is alpha being used inside bounding_box ?
-            pos = [label[8], label[9], label[10]] # TODO: Are these comma separated or space separated?
+            pos = [label[8], label[9], label[10]]
             color = [0, 1, 0]
             #bbox = bounding_box(pos, color, label[0])
             bbox = bounding_box(pos, color)

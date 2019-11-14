@@ -15,8 +15,9 @@ class Convert3D:
             self.img_r = img_r
 
         self.bounds_list = bounds_list
-        self.depth_img = self._CalculateStereoDisparityFast()
-        self.xyz_img = self._XYZImageFromDisparity()
+
+        self.depth_img = -self._CalculateStereoDisparityFast()
+        self.xyz_img = 1.2*self._XYZImageFromDisparity()
         self.point_cloud = self.PointCloud()
         self.positions_3D = self.Positions3D()
 
