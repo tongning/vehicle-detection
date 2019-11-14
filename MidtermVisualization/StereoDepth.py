@@ -16,8 +16,8 @@ class Convert3D:
 
         self.bounds_list = bounds_list
 
-        self.depth_img = self._CalculateStereoDisparityFast()
-        self.xyz_img = self._XYZImageFromDisparity()
+        self.depth_img = -self._CalculateStereoDisparityFast()
+        self.xyz_img = 1.2*self._XYZImageFromDisparity()
         self.point_cloud = self.PointCloud()
         self.positions_3D = self.Positions3D()
 
@@ -124,7 +124,7 @@ class Convert3D:
         positions = []
 
         for bound in self.bounds_list:
-            if (bound[4] == 'car' and float(bound[5]) > 0.9):
+            if (bound[4] == 'car' and float(bound[5]) > 0.4):
                 xyz_car_img = self.xyz_img[int(bound[0]):int(bound[1]), int(bound[2]):int(bound[3])]
                 h, w, _ = xyz_car_img.shape
                 xyz_car_img = xyz_car_img[int(h/4):int(3*h/4), int(w/4):int(3*w/4)]

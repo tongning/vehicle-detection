@@ -38,6 +38,7 @@ if __name__ == "__main__":
     img_l = current_directory + '/../data_tracking_image_2/training/image_02/0010/000000.png'
     img_r = current_directory + '/../data_tracking_image_2/training/image_03/0010/000000.png'
 
+
     frame = Convert3D(img_l, img_r)
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(np.int16(frame.point_cloud * 10))
