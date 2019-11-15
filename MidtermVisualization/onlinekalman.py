@@ -8,7 +8,7 @@ import math
 class MultiOnlineKalman:
     def __init__(self):
         self.filter_list = []
-    
+
     def take_multiple_observations(self, observations):
         taken_filter_indices = []
         corrected_results = []
@@ -23,9 +23,9 @@ class MultiOnlineKalman:
             else:
                 corrected_state, _ = self.filter_list[matching_filter_index].take_observation(observation[0], observation[1], observation[2])
                 corrected_results.append([corrected_state[0], corrected_state[2], corrected_state[4]])
-        
+
         return corrected_results
-    
+
     def find_matching_filter_index(self, observation, taken_filter_indices, distance_cap=10):
         closest_index = None
         closest_dist = math.inf
@@ -38,12 +38,12 @@ class MultiOnlineKalman:
             if distance < closest_dist and distance < distance_cap:
                 closest_index = idx
                 closest_dist = distance
-        
+
         if closest_index is not None:
             taken_filter_indices.append(closest_index)
 
-        print("Closest dist: {}".format(closest_dist))
-        
+        #print("Closest dist: {}".format(closest_dist))
+
         return closest_index
 
 class OnlineKalman:
@@ -66,21 +66,21 @@ class OnlineKalman:
                                     [0, 0, 1, 0, 0, 0],
                                     [0, 0, 0, 0, 1, 0]]
 
-        # transition_covariance 
-        self.Q =   [[1e-4,     0,     0,     0,    0,    0], 
+        # transition_covariance
+        self.Q =   [[1e-4,     0,     0,     0,    0,    0],
                     [   0,  1e-4,     0,     0,    0,    0],
                     [   0,     0,  1e-4,     0,    0,    0],
                     [   0,     0,     0,  1e-4,    0,    0],
                     [   0,     0,     0,     0, 1e-4,    0],
                     [   0,     0,     0,     0,    0, 1e-4]]
-        
+
         self.initial_state_covariance =[[5,    0,   0,    0,    0,   0],
                                         [0,    50,  0,    0,    0,   0],
                                         [0,    0,   5,    0,    0,   0],
                                         [0,    0,   0,    50,   0,   0],
                                         [0,    0,   0,    0,    5,   0],
                                         [0,    0,   0,    0,    0,   50]]
-    
+
     def get_last_position(self):
         last_state = self.filtered_state_means[-1]
         return (last_state[0], last_state[2], last_state[4])

@@ -24,8 +24,7 @@ def capture_image(vis):
     return False
 
 
-
-def bounding_box(pos, color, alpha=0, bbox_size = (10, 10, 10)):
+def bounding_box(pos, color, alpha=0, bbox_size=(1, 1, 1)):
     # pos is a list of xyz, e.g. [0.45 3.10 5.0]
     points = [[-bbox_size[0], -bbox_size[1], -bbox_size[2]],
             [bbox_size[0], -bbox_size[1], -bbox_size[2]],
@@ -35,7 +34,7 @@ def bounding_box(pos, color, alpha=0, bbox_size = (10, 10, 10)):
             [bbox_size[0], -bbox_size[1], bbox_size[2]],
             [-bbox_size[0], bbox_size[1], bbox_size[2]],
             [bbox_size[0], bbox_size[1], bbox_size[2]]]
-    points = (np.int16(points) + 10*np.int16(np.array(pos))).tolist()
+    points = np.int16(SCALE_FACTOR * (points + np.array(pos))).tolist()
     lines = [[0, 1], [0, 2], [1, 3], [2, 3], [4, 5], [4, 6], [5, 7], [6, 7],
              [0, 4], [1, 5], [2, 6], [3, 7]]
 
@@ -48,10 +47,12 @@ def bounding_box(pos, color, alpha=0, bbox_size = (10, 10, 10)):
     return line_set
 
 
+SCALE_FACTOR = 100
+
+
 current_directory = os.getcwd()
 info = np.load(current_directory + '/../0010-left-info.pyc', allow_pickle=True)
-info_labels = np.load(current_directory + '/../dims_labels.npy')
-print(info_labels)
+info_labels = np.load(current_directory + '/../dims_labels.npy', allow_pickle=True)
 directory_l = current_directory + '/../data_tracking_image_2/training/image_02/0010/'
 directory_r = current_directory + '/../data_tracking_image_2/training/image_03/0010/'
 
@@ -92,20 +93,19 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
         # Use StereoDepth Conversions---------------------------------
         frame = Convert3D(filename_l, filename_r, info[i])
         # add point cloud
-        pcd.points = o3d.utility.Vector3dVector(np.int16(frame.point_cloud * 10))
+        scaled_pc = np.clip(frame.point_cloud * SCALE_FACTOR, -10000, 10000)
+        pcd.points = o3d.utility.Vector3dVector(np.int16(scaled_pc))
         # Use StereoDepth Conversions---------------------------------
 
         if i == 0:
             # Add point cloud at first step, otherwise update
-            #vis.add_geometry(pcd)
+            vis.add_geometry(pcd)
             pass
 
             # add bounding boxes-------------------------------------------
         for pos in frame.positions_3D:  # frame.positions_3D is a list of positions (multiple if we detect more than one car in the same frame)
             # pos is a list of xyz, e.g. [0.45 3.10 5.0]
             color = [1, 0, 0]
-            print("Non-kalman 3D positions: %d" % i)
-            print(pos)
             bbox = bounding_box(pos, color)
             vis.add_geometry(bbox)  # add bounding box to visualizer
             bounding_boxes.append(bbox)  # add it to line_sets so we can clear it at the next iteration
@@ -124,7 +124,6 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
         # Add 3D bounding box ground truth labels
         for label in info_labels[i]:
             # [0] alpha, [5] 3d_height, [6] 3d_width, [7] 3d_length, [8] x, [9] y, [10] z
-            print(label)
             # TODO: Is alpha being used inside bounding_box ?
             pos = [label[8], label[9], label[10]]
             color = [0, 1, 0]
@@ -148,7 +147,6 @@ for i, filename in enumerate(sorted(os.listdir(directory_l))):
 
         #capture_image(vis)
 
-        print(i)
 
         # Draw 2D image with 2D bounding boxes for debugging -------------------
         left_image = cv2.imread(filename_l)
