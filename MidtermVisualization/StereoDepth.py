@@ -101,17 +101,19 @@ class Convert3D:
         positions = []
 
         for bound in self.bounds_list:
-            if (bound[4] == 'car' and float(bound[5]) > 0.4):
+            if (bound[4] == 'car' and float(bound[5]) > 0.7):
                 xyz_car_img = self.xyz_img[int(bound[0]):int(bound[1]), int(bound[2]):int(bound[3])]
                 h, w, _ = xyz_car_img.shape
                 xyz_car_img = xyz_car_img[int(h/4):int(3*h/4), int(w/4):int(3*w/4)]
 
                 # Get point
-                cp = np.median(xyz_car_img.reshape(-1, 3), axis=0)
-                print("-----------------")
-                print("median filtered: ", cp)
-                print("raw            : ", car_pos)
-                car_pos = (xyz_car_img[int(xyz_car_img.shape[0]/2), int(xyz_car_img.shape[1]/2)]).tolist()
+                car_pos = np.median(xyz_car_img.reshape(-1, 3), axis=0)
+                #car_pos = (xyz_car_img[int(xyz_car_img.shape[0]/2), int(xyz_car_img.shape[1]/2)]).tolist()
+
+                #print("-----------------")
+                #print("median filtered: ", cp)
+                #print("raw            : ", car_pos)
+
                 car_pos[2] -= 2
                 positions.append(car_pos)
         return positions
