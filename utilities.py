@@ -1,8 +1,8 @@
-# Hard code everything for now.
 import numpy as np
+import os
 
-def main():
-
+# Replaces extract_labels.py
+def output_3D_labels():
     file_path = "/home/anthony/git/vehicle-detection/kitti/labels/training/label_02/0010.txt"
     list_of_dims_3D = []
 
@@ -45,5 +45,15 @@ def main():
 
     np.save(save_path, nparray, allow_pickle=True)
 
-if __name__ == "__main__":
-    main()
+
+# def top_down_IOU():
+#     current_directory = os.getcwd()
+#     labels = np.load(current_directory + '/../dims_labels.npy')
+#
+#     for label_list in labels:
+#
+#     # Ignore z and height, we are just calculating top_down IOU
+
+
+
+
