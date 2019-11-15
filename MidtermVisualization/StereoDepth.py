@@ -108,12 +108,6 @@ class Convert3D:
 
                 # Get point
                 car_pos = np.median(xyz_car_img.reshape(-1, 3), axis=0)
-                #car_pos = (xyz_car_img[int(xyz_car_img.shape[0]/2), int(xyz_car_img.shape[1]/2)]).tolist()
-
-                #print("-----------------")
-                #print("median filtered: ", cp)
-                #print("raw            : ", car_pos)
-
-                car_pos[2] -= 2
+                #car_pos[2] -= 2
                 positions.append(car_pos)
         return positions
