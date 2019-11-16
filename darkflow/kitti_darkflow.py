@@ -1,5 +1,5 @@
 import sys
-sys.path.append("..")
+#sys.path.append("..")
 
 from darkflow.net.build import TFNet
 import cv2
@@ -12,7 +12,7 @@ import os
 
 def boxing(original_img, predictions):
     newImage = np.copy(original_img)
-    print(predictions)
+    #print(predictions)
     for result in predictions:
         top_x = result['topleft']['x']
         top_y = result['topleft']['y']
@@ -30,28 +30,46 @@ def boxing(original_img, predictions):
     return newImage
 
 
-options = {"model": "cfg/yolo.cfg",
-           "load": "weights/yolo.weights",
-           "threshold": 0.25,
-           "gpu": 0.8}
 
-os.chdir("darkflow")
-tfnet = TFNet(options)
+def main(argv):
+    options = {"model": "/home/eric/vehicle-detection/network/cfg/kitti.cfg",
+               #"model": "cfg/yolo.cfg",
+               "load": -1,
+               #"load": "/home/eric/vehicle-detection/network/weights/yolo.weights",
+               "threshold": 0.35,
+               "gpu": 0.8}
+
+    #os.chdir("darkflow")
+    tfnet = TFNet(options)
+
+    plt.ion()
+    plt.show()
+
+    if len(argv) > 1:
+        sequence_number = argv[1]
+    else:
+        sequence_number = "0000"
+
+    directory_l = os.path.join("/home/eric/vehicle-detection/data/KITTI-Tracking/testing/image_02/", sequence_number)
+    _, ax = plt.subplots(figsize=(20, 10))
+    im = ax.imshow(cv2.imread(os.path.join(directory_l, '000000.png')))
+    for i, filename in enumerate(sorted(os.listdir(directory_l))):
+        if filename.endswith('.png'):
+            filename_l = os.path.join(directory_l, filename)
+            frame = cv2.imread(filename_l)
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            results = tfnet.return_predict(frame)
+            #ax.imshow(boxing(frame, results))
+            im.set_data(boxing(frame, results))
+            #plt.show()
+            plt.pause(0.01)
+            plt.draw()
+
+    #%matplotlib inline
+    plt.show()
 
 
-directory_l = "../data_tracking_image_2/testing/image_02/0000"
 
-for i, filename in enumerate(sorted(os.listdir(directory_l))):
-    if filename.endswith('.png'):
-        filename_l = os.path.join(directory_l, filename)
-        frame = cv2.imread(filename_l)
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = tfnet.return_predict(frame)
-        _, ax = plt.subplots(figsize=(20, 10))
-        ax.imshow(boxing(frame, results))
-        plt.show()
-        #plt.pause(0.1)
-        #plt.draw()
 
-#%matplotlib inline
-plt.show()
+if __name__ == "__main__":
+    main(sys.argv)

@@ -1,19 +1,23 @@
 import numpy as np
 import sys
-sys.path.append("..")
 
-from darkflow.darkflow.net.build import TFNet
+from darkflow.net.build import TFNet
 import cv2
 
-options = {"model": "cfg/yolo-kitti.cfg",
-            "load": -1,#"weights/yolo.weights",
-            "batch": 7,
+
+
+options = {"model": "/home/eric/vehicle-detection/network/cfg/kitti.cfg",
+            "load": -1,#"/home/eric/vehicle-detection/network/weights/yolo.weights",
+            "batch": 8,
             "epoch": 30,
-            "gpu": 0.8,
+            "gpu": 0.9,
             "train": True,
-            "lr": 1e-7,
-            "annotation": "../VOC2012/Annotations/",
-            "dataset": "../VOC2012/JPEGImages/"}
+            "lr": 5e-8,
+            "annotation": "/home/eric/vehicle-detection/data/KITTI-Detection-VOC/Annotations/",
+            "dataset": "/home/eric/vehicle-detection/data/KITTI-Detection-VOC/JPEGImages/"}
+
+
+#os.chdir("../darkflow")
 
 tfnet = TFNet(options)
 

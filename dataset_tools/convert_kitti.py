@@ -13,25 +13,24 @@ def convert_kitti(in_dir):
             for line in in_file.readlines():
                 line_list = line.split(' ')
 
-                if line_list[0] == "Pedestrian" or line_list[0] == "Cyclist":
-                    out_lines.append(' '.join(line_list))
-                elif line_list[0] == "Car" or line_list[0] == "Truck" or line_list[0] == "Van":
+                #if line_list[0] == "Pedestrian" or line_list[0] == "Cyclist":
+                #    out_lines.append(' '.join(line_list))
+                if line_list[0] == "Car" or line_list[0] == "Van":
                     pi = 3.14159
-                    range = pi/16
+                    range = 2*pi/16
                     alpha = float(line_list[3])
 
                     if abs(alpha - pi/2) <= range or abs(alpha + pi/2) <= range:
                         angle = 0
-                    elif abs(alpha - 2*pi/3) <= range or abs(alpha + pi/3) <= range:
+                    elif abs(alpha - 3*pi/4) <= range or abs(alpha + pi/4) <= range:
                         angle = 1
-                    elif abs(alpha - 0) <= range or pi - alpha <= range or alpha + pi <= range:
+                    elif abs(alpha - 0) <= range or abs(alpha - pi) <= range or abs(alpha + pi) <= range:
                         angle = 2
-                    elif abs(alpha - pi/3) <= range or abs(alpha + 2*pi/3) <= range:
+                    elif abs(alpha - pi/4) <= range or abs(alpha + 3*pi/4) <= range:
                         angle = 3
 
                     if line_list[0] == "Van":
                         line_list[0] = "Car"
-
                     line_list[0] += "_" + str(angle)
                     out_lines.append(' '.join(line_list))
 
