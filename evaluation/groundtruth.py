@@ -15,43 +15,44 @@ def _DiscretizeAlpha(alpha):
         angle = 3
     return str(angle)
 
+class GroundTruthParser:
+    def __init__(self):
+        self.vd_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 
 
-def ReadGroundTruthSequence(in_sequence_filename):
-    # get a list of ground truth labels for a sequence
-    sequence = [[] for frame in range(1200)]
+    def ReadGroundTruthSequence(self, sequence_number):
+        in_sequence_filepath = os.path.join(self.vd_directory, 'data/KITTI-tracking/training/label_02', sequence_number + '.txt')
 
-    with open (in_sequence_filename, 'r') as in_sequence_file:
-        for line in in_sequence_file.readlines():
-            line = line.split(' ')
-            if line[2] == 'Car' or line[2] == 'Van':
-                tracked_object = {}
-                tracked_object['frame_number'] = int(line[0])
-                tracked_object['type'] = 'Car_' + _DiscretizeAlpha(float(line[5]))
-                tracked_object['bbox'] = {'left': int(float(line[6])), 'top': int(float(line[7])), 'right': int(float(line[8])), 'bottom': int(float(line[9]))}
-                #[float(i) for i in line[6:10]]
-                tracked_object['3dbbox_dim'] = [float(i) for i in line[10:13]]
-                tracked_object['3dbbox_loc'] = [float(i) for i in line[13:16]]
-                tracked_object['rotation_y'] = float(line[16])
-                tracked_object['alpha'] = float(line[5])
-                tracked_object['occluded'] = int(line[4])
+        # get a list of ground truth labels for a sequence
+        sequence = [{'tracked_objects':[]} for frame in range(1200)]
 
-                #if tracked_object['frame_number'] >= len(sequence):
-                #    sequence.append([tracked_object])
-                #else:
-                sequence[tracked_object['frame_number']].append(tracked_object)
-    return sequence
+        with open (in_sequence_filepath, 'r') as in_sequence_file:
+            for line in in_sequence_file.readlines():
+                line = line.split(' ')
+                if line[2] == 'Car' or line[2] == 'Van':
+                    tracked_object = {}
+                    tracked_object['frame_number'] = int(line[0])
+                    tracked_object['type'] = 'Car_' + _DiscretizeAlpha(float(line[5]))
+                    tracked_object['bbox'] = {'left': int(float(line[6])), 'top': int(float(line[7])), 'right': int(float(line[8])), 'bottom': int(float(line[9]))}
+                    tracked_object['3dbbox_dim'] = [float(i) for i in line[10:13]]
+                    tracked_object['3dbbox_loc'] = [float(i) for i in line[13:16]]
+                    tracked_object['rotation_y'] = float(line[16])
+                    tracked_object['alpha'] = float(line[5])
+                    tracked_object['occluded'] = int(line[4])
 
-def OutGroundTruthSequence(sequence_name, out_directory = '/home/eric/vehicle-detection/evaluation'):
-    # Read objects ground truth sequence file. Write one file per frame.
-    in_sequence_filename = os.path.join("/home/eric/vehicle-detection/data/KITTI-tracking/training/label_02/", sequence_name + '.txt')
-    out_directory=os.path.join(out_directory, 'eval', sequence_name, 'groundtruth')
-    sequence = ReadGroundTruthSequence(in_sequence_filename)
-    os.makedirs(out_directory, exist_ok=True)
-    for frame_number, frame in enumerate(sequence):
-        out_file_name = os.path.join(out_directory, str(frame_number).zfill(6))
-        with open(out_file_name, 'wb+') as out_file_frame:
-            pickle.dump(frame, out_file_frame, pickle.HIGHEST_PROTOCOL)
+                    sequence[tracked_object['frame_number']]['tracked_objects'].append(tracked_object)
+        return sequence
+
+    def OutGroundTruthSequence(self, sequence_number, out_directory=None):
+        # Read objects ground truth sequence file. Write one file per frame.
+        if not out_directory:
+            out_directory = os.path.join(self.vd_directory, 'eval', sequence_number, 'groundtruth')
+        sequence = self.ReadGroundTruthSequence(sequence_number)
+        os.makedirs(out_directory, exist_ok=True)
+        for frame_number, frame in enumerate(sequence):
+            out_file_name = os.path.join(out_directory, str(frame_number).zfill(6))
+            with open(out_file_name, 'wb+') as out_file_frame:
+                pickle.dump(frame, out_file_frame, pickle.HIGHEST_PROTOCOL)
 
 #OutGroundTruthSequence('/home/eric/vehicle-detection/data/KITTI-tracking/training/label_02/0010.txt', '0010/groundtruth')
 
