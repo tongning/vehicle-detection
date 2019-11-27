@@ -23,7 +23,8 @@ def Draw2DBoxes(prediction=None, groundtruth=None, image=None):
 
     return image
 
-def PlaySequence(sequence_name, vd_directory = os.getcwd()):
+def PlaySequence(sequence_name):
+    vd_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
     groundtruth_path = os.path.join(vd_directory, 'eval', sequence_name, 'groundtruth')
     prediction_path = os.path.join(vd_directory, 'eval', sequence_name, 'predictions')
 
@@ -48,7 +49,7 @@ def PlaySequence(sequence_name, vd_directory = os.getcwd()):
 
 def main(argv):
     for sequence in argv[1:]:
-        PlaySequence(sequence, os.getcwd())
+        PlaySequence(sequence)
 
 if __name__ == '__main__':
     main(sys.argv)
