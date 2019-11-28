@@ -26,7 +26,6 @@ def main(argv):
     precision305, recall305 = PR('3D', 5)
     precision303, recall303 = PR('3D', 3)
 
-
     axes = plt.gca()
     axes.set_xlim([0, 1.2])
     axes.set_ylim([0, 1.2])

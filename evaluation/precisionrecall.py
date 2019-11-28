@@ -86,6 +86,7 @@ def IOU(A, B):
 
 
 def PR(type='2D', threshold=0.5):
+        units = str(threshold*100) + ' %' if type == '2D' else str(threshold) + ' m'
 
         TPFP_table = []
         total_ground_truth = 0
@@ -94,7 +95,7 @@ def PR(type='2D', threshold=0.5):
             if sequence_name == '.DS_Store':
                 continue
 
-            print ("Sequence: ", sequence_name)
+            print ("Sequence: ", sequence_name, " Type: ", type, " Threshold: ", units)
             for i, filename in enumerate(sorted(os.listdir(os.path.join('eval',sequence_name,'predictions')))):
                 prediction = loadFrameData(os.path.join('eval', sequence_name, 'predictions', filename))
                 groundtruth = loadFrameData(os.path.join('eval', sequence_name, 'groundtruth', filename))
@@ -114,7 +115,7 @@ def PR(type='2D', threshold=0.5):
                 TP += 1
             else:
                 FP += 1
-            p = TP / float(TP + FP)
+            p = TP / (TP + FP)
             r = TP / total_ground_truth
             precision.append(p)
             recall.append(r)
