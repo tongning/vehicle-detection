@@ -1,8 +1,21 @@
-from neuralnetprediction import *
+################################################################################
+#
+# Plays a video showing the 2D image space predictions and ground truth boxes.
+# The brightness of the red predictions is proportional to the model's
+# confidence.
+#
+# Usage:
+# python visualize2d 0010
+# python visualize2d 0011 0014 0011
+#
+################################################################################
+
+
 import matplotlib.pyplot as plt
-from groundtruth import *
 import os
 import sys
+import pickle
+import cv2
 
 def loadFrameData(filename):
     with open(filename, 'rb') as f:

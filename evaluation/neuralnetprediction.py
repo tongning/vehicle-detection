@@ -7,7 +7,7 @@ import numpy as np
 import os
 import pickle
 from StereoDepth import *
-from visualize2d import *
+import visualize2d
 
 class NetworkModel:
     def __init__(self):
@@ -65,7 +65,7 @@ class NetworkModel:
                 out_file_name = os.path.join(out_directory, os.path.splitext(filename)[0])
 
                 if visualize:
-                    img = Draw2DBoxes(frame_data)
+                    img = visualize2d.Draw2DBoxes(frame_data)
                     if not im:
                         im = ax.imshow(img)
                     else:
