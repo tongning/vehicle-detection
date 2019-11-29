@@ -8,10 +8,11 @@ import os
 import pickle
 from StereoDepth import *
 import visualize2d
+from onlinekalman import OnlineKalman, MultiOnlineKalman
 
 class NetworkModel:
     def __init__(self):
-
+        self.kalmanfilter = None
         self.vd_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
         os.chdir(self.vd_directory)
         os.chdir("darkflow")
@@ -22,7 +23,7 @@ class NetworkModel:
 
         self.tfnet = TFNet(options)
 
-    def PredictFrame(self, sequence_name, image_name):
+    def PredictFrame(self, sequence_name, image_name, filter=None):
         #directory_l = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_02/", sequence_name)
         #directory_r = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_03/", sequence_name)
         if type(image_name) == int:
@@ -36,13 +37,29 @@ class NetworkModel:
         stereoPrediction = Convert3D(image_path_l, image_path_r, yolo_prediction)
 
         frame_data = {'tracked_objects': [], 'image_l': rgb_image}
+
+        raw_object_3d_positions = []
+        for _, predicted_3d_position in zip(yolo_prediction, stereoPrediction.positions_3D):
+            raw_object_3d_positions.append(list(predicted_3d_position))
+
+        if filter == 'kalman':
+            if self.kalmanfilter == None or self.kalmanfilter.sequence_name != sequence_name:
+                self.kalmanfilter = MultiOnlineKalman(sequence_name)
+            filtered_object_3d_positions = self.kalmanfilter.take_multiple_observations(raw_object_3d_positions)
+
+        index = 0
         for predicted_box, predicted_3d_position in zip(yolo_prediction, stereoPrediction.positions_3D):
             tracked_object = {}
             tracked_object['bbox'] = {'left': predicted_box['topleft']['x'], 'top': predicted_box['topleft']['y'], 'right': predicted_box['bottomright']['x'], 'bottom': predicted_box['bottomright']['y']}
             tracked_object['confidence'] = predicted_box['confidence']
             tracked_object['type'] = predicted_box['label']
-            tracked_object['3dbbox_loc'] = predicted_3d_position
+            if filter == 'kalman':
+                tracked_object['3dbbox_loc'] = filtered_object_3d_positions[index]
+            else:
+                tracked_object['3dbbox_loc'] = predicted_3d_position
+            raw_object_3d_positions.append(list(predicted_3d_position))
             frame_data['tracked_objects'].append(tracked_object)
+            index += 1
 
         return frame_data
 
