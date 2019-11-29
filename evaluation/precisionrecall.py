@@ -63,6 +63,7 @@ def TPFP3D(predictions, groundtruth, distance_threshold=5):
     return results
 
 def EuclideanDistance(groundtruth_object, predicted_object):
+    # TODO: Create another version of this function for filtered bounding box location
     return np.linalg.norm(np.array(groundtruth_object['3dbbox_loc']) - np.array(predicted_object['3dbbox_loc']))
 
 def IOU(A, B):
@@ -99,9 +100,9 @@ def PR(type='2D', threshold=0.5):
                 prediction = loadFrameData(os.path.join('eval', sequence_name, 'predictions', filename))
                 groundtruth = loadFrameData(os.path.join('eval', sequence_name, 'groundtruth', filename))
                 total_ground_truth += len(groundtruth['tracked_objects'])
-                if type == '2D':
+                if type == '2D': # Image space precision-recall
                     TPFP_table += TPFP2D(prediction, groundtruth, threshold)
-                else:
+                else: # 3d position precision-recall
                     TPFP_table += TPFP3D(prediction, groundtruth, threshold)
 
         TPFP_table.sort(reverse=True) # Sort by descending confidence
