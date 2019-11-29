@@ -2,3 +2,5 @@ data/
 data_tracking_image_2
 .vscode
 **/*pycache*
+darkflow/
+darkflow-repo/
