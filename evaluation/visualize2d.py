@@ -23,7 +23,7 @@ def loadFrameData(filename):
 
 def Draw2DBoxes(prediction=None, groundtruth=None, image=None):
     if prediction:
-        image = prediction['image_l']
+        image = prediction['image_depth']
 
     if groundtruth:
         for tracked_object in groundtruth['tracked_objects']:

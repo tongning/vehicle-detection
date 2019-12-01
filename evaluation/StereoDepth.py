@@ -18,7 +18,7 @@ class Convert3D:
 
         self.depth_img = self._CalculateStereoDisparityFast()
         #self.depth_img = self._CalculateStereoDisparity()
-        self.xyz_img = -1.2*self._XYZImageFromDisparity()
+        self.xyz_img = -self._XYZImageFromDisparity()
         self.point_cloud = self.PointCloud()
         self.positions_3D = self.Positions3D()
 
@@ -109,6 +109,6 @@ class Convert3D:
 
             # Get point
             car_pos = np.median(xyz_car_img.reshape(-1, 3), axis=0)
-            #car_pos[2] -= 2
+            car_pos += (car_pos/np.linalg.norm(car_pos))*1.5
             positions.append(car_pos)
         return positions
