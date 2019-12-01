@@ -35,7 +35,7 @@ class NetworkModel:
         yolo_prediction = self.tfnet.return_predict(rgb_image)
         stereoPrediction = Convert3D(image_path_l, image_path_r, yolo_prediction)
 
-        frame_data = {'tracked_objects': [], 'image_l': rgb_image}
+        frame_data = {'tracked_objects': [], 'image_l': rgb_image, 'image_depth': stereoPrediction.depth_img, 'point_cloud': stereoPrediction.point_cloud}
         for predicted_box, predicted_3d_position in zip(yolo_prediction, stereoPrediction.positions_3D):
             tracked_object = {}
             tracked_object['bbox'] = {'left': predicted_box['topleft']['x'], 'top': predicted_box['topleft']['y'], 'right': predicted_box['bottomright']['x'], 'bottom': predicted_box['bottomright']['y']}
