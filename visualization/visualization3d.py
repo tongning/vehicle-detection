@@ -1,3 +1,20 @@
+################################################################################
+#
+# Plays a video showing 3D point cloud, predictions, and ground truth boxes.
+# The brightness of the red predictions is proportional to the model's
+# confidence.
+#
+# Usage:
+# python visualization3d.py 0010
+# python visualization3d.py 0011 0014 0011
+#
+################################################################################
+
+
+
+
+
+
 import sys
 import os
 vd_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
@@ -11,14 +28,6 @@ import cv2
 import open3d as o3d
 import pickle
 
-#
-# To use: Just run python 'MidtermVisualization.py'
-#
-#
-# To change camera angle: Run 'python ChangeVisualizationViewpoint.py', move the camera
-# around until it's where you want, then press q. Then run 'MidtermVisualization.py'
-#
-#
 SCALE_FACTOR = 100
 
 def loadFrameData(filename):
@@ -69,16 +78,14 @@ def PlaySequence(sequence_name):
             vis.add_geometry(pcd)
             pass
 
-            # add bounding boxes-------------------------------------------
+        # add predicted bounding boxes-------------------------------------------
         for tracked_object in prediction_frame_data['tracked_objects']:  # frame.positions_3D is a list of positions (multiple if we detect more than one car in the same frame)
             # pos is a list of xyz, e.g. [0.45 3.10 5.0]
-            if tracked_object['confidence'] > 0.2:
-                pos = tracked_object['3dbbox_loc']
-                color = [1, 0, 0]
-                bbox = bounding_box(pos, color)
-                vis.add_geometry(bbox)  # add bounding box to visualizer
-                bounding_boxes.append(bbox)  # add it to line_sets so we can clear it at the next iteration
-        # add bounding boxes-------------------------------------------
+            pos = tracked_object['3dbbox_loc']
+            color = [tracked_object['confidence'], 0, 0]
+            bbox = bounding_box(pos, color)
+            vis.add_geometry(bbox)  # add bounding box to visualizer
+            bounding_boxes.append(bbox)  # add it to line_sets so we can clear it at the next iteration
 
 
         # Add 3D bounding box ground truth labels
