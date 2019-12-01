@@ -13,10 +13,11 @@
 
 import sys
 sys.path.append('./evaluation')
+sys.path.append('./visualization')
 import os
 from neuralnetprediction import *
 from groundtruth import *
-from visualize2d import PlaySequence
+from visualization2d import PlaySequence
 
 def main(argv):
     if 'all' in argv:

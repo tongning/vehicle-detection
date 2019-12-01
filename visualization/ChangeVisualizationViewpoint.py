@@ -4,8 +4,10 @@
 
 # examples/Python/Advanced/camera_trajectory.py
 import sys
-sys.path.append('..')
-sys.path.append('../evaluation')
+import os
+vd_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+sys.path.append(vd_directory)
+sys.path.append(os.path.join(vd_directory, 'evaluation'))
 import numpy as np
 import open3d as o3d
 from StereoDepth import *
@@ -40,7 +42,7 @@ def load_view_point(pcd, filename):
 if __name__ == "__main__":
     SCALE_FACTOR = 100
 
-    prediction_file_path = '../eval/0011/predictions/000000'
+    prediction_file_path = os.path.join(vd_directory, 'eval/0011/predictions/000000')
 
     pcd = o3d.geometry.PointCloud()
     pc = loadFrameData(prediction_file_path)['point_cloud']

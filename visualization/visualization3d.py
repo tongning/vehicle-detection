@@ -1,9 +1,10 @@
 import sys
-sys.path.append('..')
-sys.path.append('../evaluation')
+import os
+vd_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+sys.path.append(vd_directory)
+sys.path.append(os.path.join(vd_directory, 'evaluation'))
 from StereoDepth import Convert3D
 import numpy as np
-import os
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import cv2
@@ -18,6 +19,7 @@ import pickle
 # around until it's where you want, then press q. Then run 'MidtermVisualization.py'
 #
 #
+SCALE_FACTOR = 100
 
 def loadFrameData(filename):
     with open(filename, 'rb') as f:
@@ -30,7 +32,6 @@ def PlaySequence(sequence_name):
 
 
 
-    SCALE_FACTOR = 100
 
     vis = o3d.visualization.Visualizer()
     pcd = o3d.geometry.PointCloud()
@@ -51,7 +52,10 @@ def PlaySequence(sequence_name):
         prediction_file_path = os.path.join(prediction_path, file_name)
         groundtruth_file_path = os.path.join(groundtruth_path, file_name)
 
-        pc = loadFrameData(prediction_file_path)['point_cloud']
+        prediction_frame_data = loadFrameData(prediction_file_path)
+        groundtruth_frame_data = loadFrameData(groundtruth_file_path)
+
+        pc = prediction_frame_data['point_cloud']
         scaled_pc = np.clip(pc * SCALE_FACTOR, -10000, 10000)
         pcd.points = o3d.utility.Vector3dVector(np.int16(scaled_pc))
 
@@ -64,28 +68,30 @@ def PlaySequence(sequence_name):
             # Add point cloud at first step, otherwise update
             vis.add_geometry(pcd)
             pass
-        """
+
             # add bounding boxes-------------------------------------------
-        for pos in frame.positions_3D:  # frame.positions_3D is a list of positions (multiple if we detect more than one car in the same frame)
+        for tracked_object in prediction_frame_data['tracked_objects']:  # frame.positions_3D is a list of positions (multiple if we detect more than one car in the same frame)
             # pos is a list of xyz, e.g. [0.45 3.10 5.0]
-            color = [1, 0, 0]
-            bbox = bounding_box(pos, color)
-            vis.add_geometry(bbox)  # add bounding box to visualizer
-            bounding_boxes.append(bbox)  # add it to line_sets so we can clear it at the next iteration
+            if tracked_object['confidence'] > 0.2:
+                pos = tracked_object['3dbbox_loc']
+                color = [1, 0, 0]
+                bbox = bounding_box(pos, color)
+                vis.add_geometry(bbox)  # add bounding box to visualizer
+                bounding_boxes.append(bbox)  # add it to line_sets so we can clear it at the next iteration
         # add bounding boxes-------------------------------------------
 
 
         # Add 3D bounding box ground truth labels
-        for label in info_labels[i]:
+        for tracked_object in groundtruth_frame_data['tracked_objects']:
             # [0] alpha, [5] 3d_height, [6] 3d_width, [7] 3d_length, [8] x, [9] y, [10] z
             # TODO: Is alpha being used inside bounding_box ?
-            pos = [label[8], label[9], label[10]]
+            #pos = [label[8], label[9], label[10]]
+            pos = tracked_object['3dbbox_loc']
             color = [0, 1, 0]
             #bbox = bounding_box(pos, color, label[0])
             bbox = bounding_box(pos, color)
             vis.add_geometry(bbox)
             bounding_boxes.append(bbox)
-        """
 
 
         # Change Camera Position --------------------------------------

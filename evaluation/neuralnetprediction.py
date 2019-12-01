@@ -1,5 +1,6 @@
 import sys
 sys.path.append('../darkflow')
+sys.path.append('../visualization')
 from darkflow.net.build import TFNet
 import cv2
 import matplotlib.pyplot as plt
@@ -7,7 +8,7 @@ import numpy as np
 import os
 import pickle
 from StereoDepth import *
-import visualize2d
+import visualization2d
 from onlinekalman import OnlineKalman, MultiOnlineKalman
 
 class NetworkModel:
@@ -82,7 +83,7 @@ class NetworkModel:
                 out_file_name = os.path.join(out_directory, os.path.splitext(filename)[0])
 
                 if visualize:
-                    img = visualize2d.Draw2DBoxes(frame_data)
+                    img = visualization2d.Draw2DBoxes(frame_data)
                     if not im:
                         im = ax.imshow(img)
                     else:
