@@ -31,17 +31,21 @@ def load_view_point(pcd, filename):
     vis.run()
     vis.destroy_window()
 
+SCALE_FACTOR = 100
 
 if __name__ == "__main__":
 
     current_directory = os.getcwd()
-    img_l = current_directory + '/../data_tracking_image_2/training/image_02/0010/000000.png'
-    img_r = current_directory + '/../data_tracking_image_2/training/image_03/0010/000000.png'
+    img_l = current_directory + '/../data/KITTI-tracking/training/image_02/0010/000000.png'
+    img_r = current_directory + '/../data/KITTI-tracking/training/image_03/0010/000000.png'
 
 
     frame = Convert3D(img_l, img_r)
     pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(np.int16(frame.point_cloud * 10))
+    #pcd.points = o3d.utility.Vector3dVector(np.int16(frame.point_cloud * 10))
 
-    save_view_point(pcd, current_directory + '/viewpoint.json')
+    scaled_pc = np.clip(frame.point_cloud * SCALE_FACTOR, -10000, 10000)
+    pcd.points = o3d.utility.Vector3dVector(np.int16(scaled_pc))
+
+    save_view_point(pcd,current_directory + '/viewpoint.json')
     #load_view_point(pcd, current_directory + '/viewpoint.json')

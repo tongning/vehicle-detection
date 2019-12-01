@@ -53,8 +53,8 @@ SCALE_FACTOR = 100
 current_directory = os.getcwd()
 info = np.load(current_directory + '/../0010-left-info.pyc', allow_pickle=True)
 info_labels = np.load(current_directory + '/../dims_labels.npy', allow_pickle=True)
-directory_l = current_directory + '/../data_tracking_image_2/training/image_02/0010/'
-directory_r = current_directory + '/../data_tracking_image_2/training/image_03/0010/'
+directory_l = current_directory + '/../data/KITTI-tracking/training/image_02/0010/'
+directory_r = current_directory + '/../data/KITTI-tracking/training/image_03/0010/'
 
 vis = o3d.visualization.Visualizer()
 pcd = o3d.geometry.PointCloud()
@@ -62,7 +62,7 @@ vis.create_window()
 
 opt = vis.get_render_option()
 opt.background_color = np.asarray([0, 0, 0]) # set background to black
-opt.point_size = 5
+opt.point_size = 1
 opt.line_width = 100    # doesn't seem to be working
 
 
