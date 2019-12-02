@@ -25,6 +25,9 @@ def main(argv):
     precision307, recall307 = PR('3D', 7)
     precision305, recall305 = PR('3D', 5)
     precision303, recall303 = PR('3D', 3)
+    precision302, recall302 = PR('3D', 2)
+    precision301, recall301 = PR('3D', 1)
+
 
     axes = plt.gca()
     axes.set_xlim([0, 1.2])
@@ -38,6 +41,8 @@ def main(argv):
     plt.plot(recall307, precision307, 'r')
     plt.plot(recall305, precision305, 'r')
     plt.plot(recall303, precision303, 'r')
+    plt.plot(recall302, precision302, 'r')
+    plt.plot(recall301, precision301, 'r')
     plt.show()
 
 if __name__ == '__main__':

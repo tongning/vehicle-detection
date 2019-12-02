@@ -21,6 +21,10 @@ def loadFrameData(filename):
 def save_view_point(pcd, filename):
     vis = o3d.visualization.Visualizer()
     vis.create_window()
+    opt = vis.get_render_option()
+    opt.background_color = np.asarray([0, 0, 0]) # set background to black
+    opt.point_size = 1
+    opt.line_width = 100    # doesn't seem to be working
     vis.add_geometry(pcd)
     vis.run()  # user changes the view and press "q" to terminate
     param = vis.get_view_control().convert_to_pinhole_camera_parameters()
@@ -42,7 +46,8 @@ def load_view_point(pcd, filename):
 if __name__ == "__main__":
     SCALE_FACTOR = 100
 
-    prediction_file_path = os.path.join(vd_directory, 'eval/0011/predictions/000000')
+    first_sequence_folder = os.listdir(os.path.join(vd_directory, 'eval'))[1]
+    prediction_file_path = os.path.join(vd_directory, 'eval', first_sequence_folder, 'predictions/000000')
 
     pcd = o3d.geometry.PointCloud()
     pc = loadFrameData(prediction_file_path)['point_cloud']

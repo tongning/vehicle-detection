@@ -2,7 +2,8 @@
 #
 # Plays a video showing 3D point cloud, predictions, and ground truth boxes.
 # The brightness of the red predictions is proportional to the model's
-# confidence.
+# confidence. Use visualization/ChangeVisualizationViewpoint.py to change
+# the camera angle.
 #
 # Usage:
 # python visualization3d.py 0010

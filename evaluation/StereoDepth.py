@@ -58,20 +58,22 @@ class Convert3D:
 
         return filteredImg
 
+
+    #http://www.cvlibs.net/datasets/kitti/eval_stereo_flow_detail.php?benchmark=stereo&error=3&eval=all&result=3ae300a3a3b3ed3e48a63ecb665dffcc127cf8ab
     def _CalculateStereoDisparityFast(self):
         # SGBM Parameters
-        window_size = 5
+        window_size = 3
 
         left_matcher = cv2.StereoSGBM_create(
             minDisparity=0,
-            numDisparities=160, # must be divisible by 16?
-            blockSize=5,
-            P1=8 * 3 * window_size ** 2,
-            P2 = 32 * 3 * window_size ** 2,
+            numDisparities=128, # must be divisible by 16?
+            blockSize=window_size,
+            P1= 4 * window_size ** 2,
+            P2 = 32 * window_size ** 2,
             disp12MaxDiff=1,
-            uniquenessRatio=15,
-            speckleWindowSize=0,
-            speckleRange=2,
+            uniquenessRatio=10,
+            speckleWindowSize=100,
+            speckleRange=32,
             preFilterCap=63,
             mode=cv2.STEREO_SGBM_MODE_SGBM_3WAY
         )

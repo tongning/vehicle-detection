@@ -39,6 +39,20 @@ class GroundTruthParser:
                     tracked_object['rotation_y'] = float(line[16])
                     tracked_object['alpha'] = float(line[5])
                     tracked_object['occluded'] = int(line[4])
+                    tracked_object['truncated'] = int(line[3])
+
+                    if tracked_object['bbox']['bottom'] - tracked_object['bbox']['top'] >= 40 and tracked_object['occluded'] == 0 and tracked_object['truncated'] == 0:
+                        tracked_object['difficulty'] = 'easy'
+                    elif tracked_object['bbox']['bottom'] - tracked_object['bbox']['top'] >= 25 and tracked_object['occluded'] <= 1 and tracked_object['truncated'] <= 1:
+                        tracked_object['difficulty'] = 'medium'
+                    elif tracked_object['bbox']['bottom'] - tracked_object['bbox']['top'] >= 25 and tracked_object['occluded'] <= 2 and tracked_object['truncated'] <= 2:
+                        tracked_object['difficulty'] = 'hard'
+                    else:
+                        tracked_object['difficulty'] = 'very hard'
+
+Easy: Min. bounding box height: 40 Px, Max. occlusion level: Fully visible, Max. truncation: 15 %
+Moderate: Min. bounding box height: 25 Px, Max. occlusion level: Partly occluded, Max. truncation: 30 %
+Hard: Min. bounding box height: 25 Px, Max. occlusion level: Difficult to see, Max. truncation: 50 %
 
                     sequence[tracked_object['frame_number']]['tracked_objects'].append(tracked_object)
         return sequence

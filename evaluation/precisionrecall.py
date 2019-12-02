@@ -85,6 +85,10 @@ def IOU(A, B):
     # return the intersection over union value
     return iou
 
+# https://research.mapillary.com/img/publications/MonoDIS.pdf
+# Calculate according to MonoDIS paper and KITTI readme
+def MAP():
+    pass
 
 def PR(type='2D', threshold=0.5):
         units = str(threshold*100) + ' %' if type == '2D' else str(threshold) + ' m'
