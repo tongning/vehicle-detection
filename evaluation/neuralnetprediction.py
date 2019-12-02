@@ -1,11 +1,18 @@
 import sys
-sys.path.append('../darkflow')
-sys.path.append('../visualization')
+import os
+
+#sys.path.append('../darkflow')
+#sys.path.append('../visualization')
+vd_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+sys.path.append(vd_directory)
+sys.path.append(os.path.join(vd_directory, 'darkflow'))
+sys.path.append(os.path.join(vd_directory, 'visualization'))
+
+
 from darkflow.net.build import TFNet
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import pickle
 from StereoDepth import *
 import visualization2d
@@ -93,7 +100,7 @@ class NetworkModel:
 
                 with open(out_file_name, 'wb+') as out_file:
                     pickle.dump(frame_data, out_file, pickle.HIGHEST_PROTOCOL)
-
+        plt.close()
 
 
 """
