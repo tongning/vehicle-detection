@@ -31,7 +31,7 @@ class NetworkModel:
 
         self.tfnet = TFNet(options)
 
-    def PredictFrame(self, sequence_name, image_name, filter=None):
+    def PredictFrame(self, sequence_name, image_name, filter_type=None):
         #directory_l = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_02/", sequence_name)
         #directory_r = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_03/", sequence_name)
         if type(image_name) == int:
@@ -50,8 +50,8 @@ class NetworkModel:
         for _, predicted_3d_position in zip(yolo_prediction, stereoPrediction.positions_3D):
             raw_object_3d_positions.append(list(predicted_3d_position))
 
-        if filter == 'kalman':
-            if self.kalmanfilter == None or self.kalmanfilter.sequence_name != sequence_name:
+        if filter_type == 'kalman':
+            if self.kalmanfilter is None or self.kalmanfilter.sequence_name != sequence_name:
                 self.kalmanfilter = MultiOnlineKalman(sequence_name)
             filtered_object_3d_positions = self.kalmanfilter.take_multiple_observations(raw_object_3d_positions)
 
@@ -61,13 +61,16 @@ class NetworkModel:
             tracked_object['bbox'] = {'left': predicted_box['topleft']['x'], 'top': predicted_box['topleft']['y'], 'right': predicted_box['bottomright']['x'], 'bottom': predicted_box['bottomright']['y']}
             tracked_object['confidence'] = predicted_box['confidence']
             tracked_object['type'] = predicted_box['label']
-            if filter == 'kalman':
+            if filter_type == 'kalman':
                 tracked_object['3dbbox_loc'] = filtered_object_3d_positions[index]
             else:
                 tracked_object['3dbbox_loc'] = predicted_3d_position
             raw_object_3d_positions.append(list(predicted_3d_position))
             frame_data['tracked_objects'].append(tracked_object)
             index += 1
+
+        #print("Number of objects: {}; Number of filters:{}".format(len(raw_object_3d_positions), len(self.kalmanfilter.filter_list)))
+
 
         return frame_data
 
