@@ -43,6 +43,12 @@ def main(argv):
     plt.plot(recall303, precision303, 'r')
     plt.plot(recall302, precision302, 'r')
     plt.plot(recall301, precision301, 'r')
+
+    plt.xlabel('Recall', fontsize=14)
+    plt.ylabel('Precision', fontsize=14)
+    plt.xlim(0,1.0)
+    plt.ylim(0,1.05)
+    plt.title('Precision-Recall curve for each IoU threshold (blue)\n and distance threshold (red)')
     plt.show()
 
 if __name__ == '__main__':
