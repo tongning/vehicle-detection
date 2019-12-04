@@ -14,20 +14,23 @@ class MultiOnlineKalman:
         return math.sqrt((pos1[0]-pos2[0])**2+(pos1[1]-pos2[1])**2+(pos1[2]-pos2[2])**2)
 
     def take_multiple_observations(self, observations, detection_confidences):
-        taken_filter_indices = []
+
+        taken_filter_set = set()
         corrected_results = []
         corrected_confidences = []
 
         for idx, observation in enumerate(observations):
-            matching_filter_index = self.find_matching_filter_index(observation, taken_filter_indices)
+            matching_filter_index = self.find_matching_filter_index(observation, taken_filter_set)
             if matching_filter_index is None:
                 new_filter = OnlineKalman()
                 corrected_state, _ = new_filter.take_observation(observation[0], observation[1], observation[2])
                 new_filter.detection_confidence = detection_confidences[idx]
                 self.filter_list.append(new_filter)
+                taken_filter_set.add(new_filter)
                 corrected_results.append(observation)
                 corrected_confidences.append(detection_confidences[idx])
             else:
+                taken_filter_set.add(self.filter_list[matching_filter_index])
                 corrected_state, _ = self.filter_list[matching_filter_index].take_observation(observation[0], observation[1], observation[2])
                 self.filter_list[matching_filter_index].detection_confidence = detection_confidences[idx]
                 if False:#self.distance([corrected_state[0], corrected_state[2], corrected_state[4]], observation) > 4:
@@ -36,26 +39,26 @@ class MultiOnlineKalman:
                     corrected_results.append([corrected_state[0], corrected_state[2], corrected_state[4]])
                 corrected_confidences.append(detection_confidences[idx])
 
-        # print("Percentage of filters matched: {}".format(len(taken_filter_indices)/len(self.filter_list)))
+        #print("Percentage of filters matched: {}; {}/{}".format(len(taken_filter_set)/len(self.filter_list),len(taken_filter_set), len(self.filter_list)))
 
 
         
         filters_to_remove = []
         for idx, filt in enumerate(self.filter_list):
-            if idx not in taken_filter_indices:
-                self.filter_list[idx].take_observation(None, None, None)
-                self.filter_list[idx].detection_confidence -= 0.1
-                if self.filter_list[idx].detection_confidence < 0:
-                    self.filter_list[idx].detection_confidence = 0
+            if filt not in taken_filter_set:
+                filt.detection_confidence -= 0.0
+                if filt.detection_confidence < 0:
+                    filt.detection_confidence = 0
                 
             
-            if self.filter_list[idx].time_since_last_update > 10:
-                filters_to_remove.append(self.filter_list[idx])
+            if filt.time_since_last_update > 3:
+                filters_to_remove.append(filt)
         for filt in filters_to_remove:
             self.filter_list.remove(filt)
+        
 
         for idx, filt in enumerate(self.filter_list):
-            if idx not in taken_filter_indices:
+            if filt not in taken_filter_set:
                 corrected_state, _ = self.filter_list[idx].take_observation(None, None, None)
                 corrected_results.append([corrected_state[0], corrected_state[2], corrected_state[4]])
                 corrected_confidences.append(filt.detection_confidence)
@@ -63,21 +66,18 @@ class MultiOnlineKalman:
         
         return corrected_results, corrected_confidences
 
-    def find_matching_filter_index(self, observation, taken_filter_indices, distance_cap=5):
+    def find_matching_filter_index(self, observation, taken_filter_set, distance_cap=8):
         closest_index = None
         closest_dist = math.inf
 
         for idx, some_filter in enumerate(self.filter_list):
-            if idx in taken_filter_indices:
+            if idx in taken_filter_set:
                 continue
             filter_position = some_filter.get_last_position()
             distance = math.sqrt((filter_position[0]-observation[0])**2 + (filter_position[1]-observation[1])**2 + (filter_position[2]-observation[2])**2)
             if distance < closest_dist and distance < distance_cap:
                 closest_index = idx
                 closest_dist = distance
-
-        if closest_index is not None:
-            taken_filter_indices.append(closest_index)
 
         #print("Closest dist: {}".format(closest_dist))
 
@@ -106,19 +106,19 @@ class OnlineKalman:
                                     [0, 0, 0, 0, 1, 0]]
 
         # transition_covariance
-        self.Q =   [[1e-3,     0,     0,     0,    0,    0],
-                    [   0,  1e-3,     0,     0,    0,    0],
-                    [   0,     0,  1e-3,     0,    0,    0],
-                    [   0,     0,     0,  1e-3,    0,    0],
-                    [   0,     0,     0,     0, 1e-3,    0],
-                    [   0,     0,     0,     0,    0, 1e-3]]
+        self.Q =   [[1e-4,     0,     0,     0,    0,    0],
+                    [   0,  1e-4,     0,     0,    0,    0],
+                    [   0,     0,  1e-4,     0,    0,    0],
+                    [   0,     0,     0,  1e-4,    0,    0],
+                    [   0,     0,     0,     0, 1e-4,    0],
+                    [   0,     0,     0,     0,    0, 1e-4]]
 
-        self.initial_state_covariance =[[0.5,    0,   0,    0,    0,   0],
-                                        [0,    500,  0,    0,    0,   0],
-                                        [0,    0,   0.5,    0,    0,   0],
-                                        [0,    0,   0,    500,   0,   0],
-                                        [0,    0,   0,    0,    0.5,   0],
-                                        [0,    0,   0,    0,    0,   500]]
+        self.initial_state_covariance =[[1,    0,   0,    0,    0,   0],
+                                        [0,    50,  0,    0,    0,   0],
+                                        [0,    0,   1,    0,    0,   0],
+                                        [0,    0,   0,    50,   0,   0],
+                                        [0,    0,   0,    0,    1,   0],
+                                        [0,    0,   0,    0,    0,   50]]
 
     def get_last_position(self):
         last_state = self.filtered_state_means[-1]
@@ -131,8 +131,9 @@ class OnlineKalman:
             self.kalman_filter = KalmanFilter(  transition_matrices = self.transition_matrix,
                                                 observation_matrices = self.observation_matrix,
                                                 initial_state_mean = initial_state_mean,
-                                                initial_state_covariance = self.initial_state_covariance,
-                                                transition_covariance = self.Q)
+                                                initial_state_covariance = self.initial_state_covariance
+                                                #transition_covariance = self.Q
+                                                )
             self.filtered_state_means.append(initial_state_mean)
             self.filtered_state_covariances.append(self.initial_state_covariance)
             return (initial_state_mean, self.initial_state_covariance)
@@ -151,6 +152,7 @@ class OnlineKalman:
                     self.filtered_state_means[-1],
                     self.filtered_state_covariances[-1])
                 )
+                #print("Got here {}".format(self.get_last_position()))
             self.filtered_state_means.append(new_mean.tolist())
             self.filtered_state_covariances.append(new_cov)
             return (new_mean.tolist(), new_cov)

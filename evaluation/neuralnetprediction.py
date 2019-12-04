@@ -31,7 +31,8 @@ class NetworkModel:
 
         self.tfnet = TFNet(options)
 
-    def PredictFrame(self, sequence_name, image_name, filter_type=None, add_old_detections=True):
+    def PredictFrame(self, sequence_name, image_name, filter_type='kalman', add_old_detections=True):
+        print("----------------------")
         #directory_l = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_02/", sequence_name)
         #directory_r = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_03/", sequence_name)
         if type(image_name) == int:
@@ -69,6 +70,8 @@ class NetworkModel:
                 tracked_object['3dbbox_loc'] = predicted_3d_position
             raw_object_3d_positions.append(list(predicted_3d_position))
             frame_data['tracked_objects'].append(tracked_object)
+            if predicted_box['confidence'] > 0.8:
+                print(predicted_3d_position)
             index += 1
 
         if filter_type == 'kalman' and add_old_detections:
@@ -78,7 +81,8 @@ class NetworkModel:
                 tracked_object['confidence'] = confidences[index]
                 tracked_object['type'] = 'Unknown'
                 tracked_object['3dbbox_loc'] = filtered_object_3d_positions[index]
-                if confidences[index] > 0.9:
+                if confidences[index] > 0.4:
+                    print("Added old  detection")
                     frame_data['tracked_objects'].append(tracked_object)
                 index += 1
 
