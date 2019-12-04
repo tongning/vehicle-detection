@@ -31,7 +31,7 @@ class NetworkModel:
 
         self.tfnet = TFNet(options)
 
-    def PredictFrame(self, sequence_name, image_name, filter_type='kalman', add_old_detections=True):
+    def PredictFrame(self, sequence_name, image_name, filter_type='kalman', add_old_detections=True, filter_high_confidence_only=True):
         print("----------------------")
         #directory_l = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_02/", sequence_name)
         #directory_r = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_03/", sequence_name)
@@ -49,9 +49,15 @@ class NetworkModel:
 
         raw_object_3d_positions = []
         raw_confidences = []
+        high_confidence_indexes = []
+
+        index = 0
         for predicted_box, predicted_3d_position in zip(yolo_prediction, stereoPrediction.positions_3D):
-            raw_object_3d_positions.append(list(predicted_3d_position))
-            raw_confidences.append(predicted_box['confidence'])
+            if predicted_box['confidence'] > 0.8 or not filter_high_confidence_only:
+                raw_object_3d_positions.append(list(predicted_3d_position))
+                raw_confidences.append(predicted_box['confidence'])
+                high_confidence_indexes.append(index)
+            index += 1
 
         if filter_type == 'kalman':
             if self.kalmanfilter is None or self.kalmanfilter.sequence_name != sequence_name:
@@ -59,13 +65,15 @@ class NetworkModel:
             filtered_object_3d_positions, confidences = self.kalmanfilter.take_multiple_observations(raw_object_3d_positions, raw_confidences)
 
         index = 0
+        filtered_positions_index = 0
         for predicted_box, predicted_3d_position in zip(yolo_prediction, stereoPrediction.positions_3D):
             tracked_object = {}
             tracked_object['bbox'] = {'left': predicted_box['topleft']['x'], 'top': predicted_box['topleft']['y'], 'right': predicted_box['bottomright']['x'], 'bottom': predicted_box['bottomright']['y']}
             tracked_object['confidence'] = predicted_box['confidence']
             tracked_object['type'] = predicted_box['label']
-            if filter_type == 'kalman':
-                tracked_object['3dbbox_loc'] = filtered_object_3d_positions[index]
+            if filter_type == 'kalman' and (not filter_high_confidence_only or index in high_confidence_indexes):
+                tracked_object['3dbbox_loc'] = filtered_object_3d_positions[filtered_positions_index]
+                filtered_positions_index += 1
             else:
                 tracked_object['3dbbox_loc'] = predicted_3d_position
             raw_object_3d_positions.append(list(predicted_3d_position))
@@ -75,12 +83,12 @@ class NetworkModel:
             index += 1
 
         if filter_type == 'kalman' and add_old_detections:
-            while index < len(filtered_object_3d_positions):
+            while filtered_positions_index < len(filtered_object_3d_positions):
                 tracked_object = {}
                 tracked_object['bbox'] = {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}
-                tracked_object['confidence'] = confidences[index]
+                tracked_object['confidence'] = confidences[filtered_positions_index]
                 tracked_object['type'] = 'Unknown'
-                tracked_object['3dbbox_loc'] = filtered_object_3d_positions[index]
+                tracked_object['3dbbox_loc'] = filtered_object_3d_positions[filtered_positions_index]
                 if confidences[index] > 0.4:
                     print("Added old  detection")
                     frame_data['tracked_objects'].append(tracked_object)
