@@ -27,7 +27,7 @@ def TPFP2D(predictions, groundtruth, iou_threshold=0.5):
 
         if min_distance >= iou_threshold:
             gt_objects.remove(gt_object)
-            results.append((tracked_object['confidence'], 'TP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty']))
+            results.append((tracked_object['confidence'], 'TP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty'], int(tracked_object['type'].split('_')[1])))
         else:
             results.append((tracked_object['confidence'], 'FP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty']))
     return results
@@ -45,6 +45,7 @@ def TPFP3D(predictions, groundtruth, distance_threshold=5):
     results = []
     #used_gt_objects = set()
     gt_objects = set(range(len(groundtruth['tracked_objects'])))
+
     for tracked_object in sorted(predictions['tracked_objects'], key=lambda x: x['confidence'], reverse=True):
 
         if not gt_objects:
@@ -55,7 +56,7 @@ def TPFP3D(predictions, groundtruth, distance_threshold=5):
         if min_distance <= distance_threshold:
             gt_objects.remove(gt_object)
             #used_gt_objects.add(gt_index)
-            results.append((tracked_object['confidence'], 'TP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty']))
+            results.append((tracked_object['confidence'], 'TP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty'], int(tracked_object['type'].split('_')[1])))
         else:
             results.append((tracked_object['confidence'], 'FP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty']))
     return results
@@ -136,6 +137,10 @@ def PR(type='2D', threshold=0.5):
         recall_easy = []
         recall_medium = []
         recall_hard = []
+
+        y_true = []
+        y_pred = []
+
         for pred in TPFP_table:
             if pred[3] == 'easy':
                 if pred[1] == 'TP':
@@ -168,4 +173,8 @@ def PR(type='2D', threshold=0.5):
                 precision_hard.append(p_hard)
                 recall_hard.append(r_hard)
 
-        return precision_easy, recall_easy, precision_medium, recall_medium, precision_hard, recall_hard
+            if pred[1] == 'TP':
+                y_true.extend([pred[4]])
+                y_pred.extend([pred[5]])
+
+        return precision_easy, recall_easy, precision_medium, recall_medium, precision_hard, recall_hard, (y_true, y_pred)
