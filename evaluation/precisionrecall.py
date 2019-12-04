@@ -17,21 +17,19 @@ def TPFP2D(predictions, groundtruth, iou_threshold=0.5):
     # on a car, only one will be a true positive. The other will be a false
     # positive.
     results = []
-    used_gt_objects = set()
     gt_objects = set(range(len(groundtruth['tracked_objects'])))
     for tracked_object in sorted(predictions['tracked_objects'], key=lambda x: x['confidence'], reverse=True):
 
         if not gt_objects:
-            results.append((tracked_object['confidence'], 'FP', 0))
+            results.append((tracked_object['confidence'], 'FP', 0, 'missing'))
             continue
         min_distance, gt_object = max([(IOU(tracked_object, groundtruth['tracked_objects'][gt_object]), gt_object) for gt_object in gt_objects])
 
         if min_distance >= iou_threshold:
             gt_objects.remove(gt_object)
-            #used_gt_objects.add(gt_index)
-            results.append((tracked_object['confidence'], 'TP', min_distance))
+            results.append((tracked_object['confidence'], 'TP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty']))
         else:
-            results.append((tracked_object['confidence'], 'FP', min_distance))
+            results.append((tracked_object['confidence'], 'FP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty']))
     return results
 
 def TPFP3D(predictions, groundtruth, distance_threshold=5):
@@ -50,16 +48,16 @@ def TPFP3D(predictions, groundtruth, distance_threshold=5):
     for tracked_object in sorted(predictions['tracked_objects'], key=lambda x: x['confidence'], reverse=True):
 
         if not gt_objects:
-            results.append((tracked_object['confidence'], 'FP', 0))
+            results.append((tracked_object['confidence'], 'FP', 0, 'missing'))
             continue
         min_distance, gt_object = min([(EuclideanDistance(tracked_object, groundtruth['tracked_objects'][gt_object]), gt_object) for gt_object in gt_objects])
 
         if min_distance <= distance_threshold:
             gt_objects.remove(gt_object)
             #used_gt_objects.add(gt_index)
-            results.append((tracked_object['confidence'], 'TP', min_distance))
+            results.append((tracked_object['confidence'], 'TP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty']))
         else:
-            results.append((tracked_object['confidence'], 'FP', min_distance))
+            results.append((tracked_object['confidence'], 'FP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty']))
     return results
 
 def EuclideanDistance(groundtruth_object, predicted_object):
@@ -90,11 +88,14 @@ def IOU(A, B):
 def MAP():
     pass
 
+
 def PR(type='2D', threshold=0.5):
         units = str(threshold*100) + ' %' if type == '2D' else str(threshold) + ' m'
 
         TPFP_table = []
-        total_ground_truth = 0
+        easy_counts = 0
+        medium_counts = 0
+        hard_counts = 0
 
         for sequence_name in os.listdir('eval'):
             if sequence_name == '.DS_Store':
@@ -104,25 +105,67 @@ def PR(type='2D', threshold=0.5):
             for i, filename in enumerate(sorted(os.listdir(os.path.join('eval',sequence_name,'predictions')))):
                 prediction = loadFrameData(os.path.join('eval', sequence_name, 'predictions', filename))
                 groundtruth = loadFrameData(os.path.join('eval', sequence_name, 'groundtruth', filename))
-                total_ground_truth += len(groundtruth['tracked_objects'])
+                for gt_object in groundtruth['tracked_objects']:
+                    if gt_object['difficulty'] == 'easy':
+                        easy_counts += 1
+                    elif gt_object['difficulty'] == 'medium':
+                        medium_counts += 1
+                    elif gt_object['difficulty'] == 'hard':
+                        hard_counts += 1
+
+
                 if type == '2D': # Image space precision-recall
                     TPFP_table += TPFP2D(prediction, groundtruth, threshold)
                 else: # 3d position precision-recall
                     TPFP_table += TPFP3D(prediction, groundtruth, threshold)
 
-        TPFP_table.sort(reverse=True) # Sort by descending confidence
-        TP = 0 # True positive counts
-        FP = 0 # False positive counts
-        precision = []
-        recall = []
-        for pred in TPFP_table:
-            if pred[1] == 'TP':
-                TP += 1
-            else:
-                FP += 1
-            p = TP / (TP + FP)
-            r = TP / total_ground_truth
-            precision.append(p)
-            recall.append(r)
+        print(easy_counts)
+        print(medium_counts)
+        print(hard_counts)
 
-        return precision, recall
+        TPFP_table.sort(reverse=True) # Sort by descending confidence
+        TP_easy = 0 # True positive counts
+        FP_easy = 0 # False positive counts
+        TP_medium = 0
+        FP_medium = 0
+        TP_hard = 0
+        FP_hard = 0
+        precision_easy = []
+        precision_medium = []
+        precision_hard = []
+        recall_easy = []
+        recall_medium = []
+        recall_hard = []
+        for pred in TPFP_table:
+            if pred[3] == 'easy':
+                if pred[1] == 'TP':
+                    TP_easy += 1
+                else:
+                    FP_easy += 1
+                p_easy = TP_easy / (TP_easy + FP_easy)
+                r_easy = TP_easy / easy_counts
+
+                precision_easy.append(p_easy)
+                recall_easy.append(r_easy)
+            elif pred[3] == 'medium':
+                if pred[1] == 'TP':
+                    TP_medium += 1
+                else:
+                    FP_medium += 1
+                p_medium = TP_medium / (TP_medium + FP_medium)
+                r_medium = TP_medium / medium_counts
+
+                precision_medium.append(p_medium)
+                recall_medium.append(r_medium)
+            elif pred[3] == 'hard':
+                if pred[1] == 'TP':
+                    TP_hard += 1
+                else:
+                    FP_hard += 1
+                p_hard = TP_hard / (TP_hard + FP_hard)
+                r_hard = TP_hard / hard_counts
+
+                precision_hard.append(p_hard)
+                recall_hard.append(r_hard)
+
+        return precision_easy, recall_easy, precision_medium, recall_medium, precision_hard, recall_hard

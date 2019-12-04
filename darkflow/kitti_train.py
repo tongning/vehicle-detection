@@ -12,9 +12,9 @@ options = {"model": "/home/eric/vehicle-detection/network/cfg/kitti.cfg",
             "epoch": 30,
             "gpu": 0.9,
             "train": True,
-            "lr": 5e-8,
-            "annotation": "/home/eric/vehicle-detection/data/KITTI-Detection-VOC/Annotations/",
-            "dataset": "/home/eric/vehicle-detection/data/KITTI-Detection-VOC/JPEGImages/"}
+            "lr": 1e-6,
+            "annotation": "/home/eric/vehicle-detection/data/KITTI-detection/Annotations/",
+            "dataset": "/home/eric/vehicle-detection/data/KITTI-detection/JPEGImages/"}
 
 
 #os.chdir("../darkflow")
