@@ -43,11 +43,9 @@ def TPFP3D(predictions, groundtruth, distance_threshold=5):
     # positive.
 
     results = []
-    #used_gt_objects = set()
     gt_objects = set(range(len(groundtruth['tracked_objects'])))
 
     for tracked_object in sorted(predictions['tracked_objects'], key=lambda x: x['confidence'], reverse=True):
-
         if not gt_objects:
             results.append((tracked_object['confidence'], 'FP', 0, 'missing'))
             continue
