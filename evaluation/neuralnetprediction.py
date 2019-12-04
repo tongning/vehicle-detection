@@ -89,10 +89,10 @@ class NetworkModel:
                 tracked_object['confidence'] = confidences[filtered_positions_index]
                 tracked_object['type'] = 'Unknown'
                 tracked_object['3dbbox_loc'] = filtered_object_3d_positions[filtered_positions_index]
-                if confidences[index] > 0.4:
+                if confidences[filtered_positions_index] > 0.7:
                     print("Added old  detection")
                     frame_data['tracked_objects'].append(tracked_object)
-                index += 1
+                filtered_positions_index += 1
 
 
 

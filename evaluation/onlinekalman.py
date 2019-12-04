@@ -39,19 +39,19 @@ class MultiOnlineKalman:
                     corrected_results.append([corrected_state[0], corrected_state[2], corrected_state[4]])
                 corrected_confidences.append(detection_confidences[idx])
 
-        #print("Percentage of filters matched: {}; {}/{}".format(len(taken_filter_set)/len(self.filter_list),len(taken_filter_set), len(self.filter_list)))
+        print("Percentage of filters matched: {}; {}/{}".format(len(taken_filter_set)/len(self.filter_list),len(taken_filter_set), len(self.filter_list)))
 
 
         
         filters_to_remove = []
         for idx, filt in enumerate(self.filter_list):
             if filt not in taken_filter_set:
-                filt.detection_confidence -= 0.0
+                filt.detection_confidence -= 0.1
                 if filt.detection_confidence < 0:
                     filt.detection_confidence = 0
                 
             
-            if filt.time_since_last_update > 3:
+            if filt.time_since_last_update > 1:
                 filters_to_remove.append(filt)
         for filt in filters_to_remove:
             self.filter_list.remove(filt)
