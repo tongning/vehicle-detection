@@ -47,6 +47,7 @@ def TPFP3D(predictions, groundtruth, distance_threshold=5):
     results = []
     #used_gt_objects = set()
     gt_objects = set(range(len(groundtruth['tracked_objects'])))
+
     for tracked_object in sorted(predictions['tracked_objects'], key=lambda x: x['confidence'], reverse=True):
 
         if not gt_objects:
@@ -57,9 +58,10 @@ def TPFP3D(predictions, groundtruth, distance_threshold=5):
         if min_distance <= distance_threshold:
             gt_objects.remove(gt_object)
             #used_gt_objects.add(gt_index)
-            results.append((tracked_object['confidence'], 'TP', min_distance))
+            results.append((tracked_object['confidence'], 'TP', min_distance, gt_object, int(tracked_object['type'].split('_')[1])))
         else:
             results.append((tracked_object['confidence'], 'FP', min_distance))
+
     return results
 
 def EuclideanDistance(groundtruth_object, predicted_object):
@@ -115,9 +117,16 @@ def PR(type='2D', threshold=0.5):
         FP = 0 # False positive counts
         precision = []
         recall = []
+        y_true = []
+        y_pred = []
         for pred in TPFP_table:
             if pred[1] == 'TP':
                 TP += 1
+                if type == '3D':
+                    # Add the true orientation and predicted orientation into a list. So we can use it later for a
+                    # confusion matrix.
+                    y_true.extend([pred[3]])
+                    y_pred.extend([pred[4]])
             else:
                 FP += 1
             p = TP / (TP + FP)
@@ -125,4 +134,7 @@ def PR(type='2D', threshold=0.5):
             precision.append(p)
             recall.append(r)
 
-        return precision, recall
+        if type == '3D':
+            return precision, recall, (y_true, y_pred)
+        else:
+            return precision, recall
