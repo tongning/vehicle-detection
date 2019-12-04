@@ -31,7 +31,7 @@ class NetworkModel:
 
         self.tfnet = TFNet(options)
 
-    def PredictFrame(self, sequence_name, image_name, filter_type=None):
+    def PredictFrame(self, sequence_name, image_name, filter_type=None, add_old_detections=True):
         #directory_l = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_02/", sequence_name)
         #directory_r = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_03/", sequence_name)
         if type(image_name) == int:
@@ -47,13 +47,15 @@ class NetworkModel:
         frame_data = {'tracked_objects': [], 'image_l': rgb_image, 'image_depth': stereoPrediction.depth_img, 'point_cloud': stereoPrediction.point_cloud}
 
         raw_object_3d_positions = []
-        for _, predicted_3d_position in zip(yolo_prediction, stereoPrediction.positions_3D):
+        raw_confidences = []
+        for predicted_box, predicted_3d_position in zip(yolo_prediction, stereoPrediction.positions_3D):
             raw_object_3d_positions.append(list(predicted_3d_position))
+            raw_confidences.append(predicted_box['confidence'])
 
         if filter_type == 'kalman':
             if self.kalmanfilter is None or self.kalmanfilter.sequence_name != sequence_name:
                 self.kalmanfilter = MultiOnlineKalman(sequence_name)
-            filtered_object_3d_positions = self.kalmanfilter.take_multiple_observations(raw_object_3d_positions)
+            filtered_object_3d_positions, confidences = self.kalmanfilter.take_multiple_observations(raw_object_3d_positions, raw_confidences)
 
         index = 0
         for predicted_box, predicted_3d_position in zip(yolo_prediction, stereoPrediction.positions_3D):
@@ -68,6 +70,21 @@ class NetworkModel:
             raw_object_3d_positions.append(list(predicted_3d_position))
             frame_data['tracked_objects'].append(tracked_object)
             index += 1
+
+        if filter_type == 'kalman' and add_old_detections:
+            while index < len(filtered_object_3d_positions):
+                tracked_object = {}
+                tracked_object['bbox'] = {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}
+                tracked_object['confidence'] = confidences[index]
+                tracked_object['type'] = 'Unknown'
+                tracked_object['3dbbox_loc'] = filtered_object_3d_positions[index]
+                if confidences[index] > 0.9:
+                    frame_data['tracked_objects'].append(tracked_object)
+                index += 1
+
+
+
+
 
         #print("Number of objects: {}; Number of filters:{}".format(len(raw_object_3d_positions), len(self.kalmanfilter.filter_list)))
 

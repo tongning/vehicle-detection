@@ -13,23 +13,28 @@ class MultiOnlineKalman:
     def distance(self, pos1, pos2):
         return math.sqrt((pos1[0]-pos2[0])**2+(pos1[1]-pos2[1])**2+(pos1[2]-pos2[2])**2)
 
-    def take_multiple_observations(self, observations):
+    def take_multiple_observations(self, observations, detection_confidences):
         taken_filter_indices = []
         corrected_results = []
+        corrected_confidences = []
 
-        for observation in observations:
+        for idx, observation in enumerate(observations):
             matching_filter_index = self.find_matching_filter_index(observation, taken_filter_indices)
             if matching_filter_index is None:
                 new_filter = OnlineKalman()
                 corrected_state, _ = new_filter.take_observation(observation[0], observation[1], observation[2])
+                new_filter.detection_confidence = detection_confidences[idx]
                 self.filter_list.append(new_filter)
                 corrected_results.append(observation)
+                corrected_confidences.append(detection_confidences[idx])
             else:
                 corrected_state, _ = self.filter_list[matching_filter_index].take_observation(observation[0], observation[1], observation[2])
+                self.filter_list[matching_filter_index].detection_confidence = detection_confidences[idx]
                 if False:#self.distance([corrected_state[0], corrected_state[2], corrected_state[4]], observation) > 4:
                     corrected_results.append(observation)
                 else:
                     corrected_results.append([corrected_state[0], corrected_state[2], corrected_state[4]])
+                corrected_confidences.append(detection_confidences[idx])
 
         # print("Percentage of filters matched: {}".format(len(taken_filter_indices)/len(self.filter_list)))
 
@@ -39,13 +44,24 @@ class MultiOnlineKalman:
         for idx, filt in enumerate(self.filter_list):
             if idx not in taken_filter_indices:
                 self.filter_list[idx].take_observation(None, None, None)
+                self.filter_list[idx].detection_confidence -= 0.1
+                if self.filter_list[idx].detection_confidence < 0:
+                    self.filter_list[idx].detection_confidence = 0
+                
             
             if self.filter_list[idx].time_since_last_update > 10:
                 filters_to_remove.append(self.filter_list[idx])
         for filt in filters_to_remove:
             self.filter_list.remove(filt)
+
+        for idx, filt in enumerate(self.filter_list):
+            if idx not in taken_filter_indices:
+                corrected_state, _ = self.filter_list[idx].take_observation(None, None, None)
+                corrected_results.append([corrected_state[0], corrected_state[2], corrected_state[4]])
+                corrected_confidences.append(filt.detection_confidence)
+
         
-        return corrected_results
+        return corrected_results, corrected_confidences
 
     def find_matching_filter_index(self, observation, taken_filter_indices, distance_cap=5):
         closest_index = None
@@ -70,6 +86,7 @@ class MultiOnlineKalman:
 class OnlineKalman:
     def __init__(self):
         self.kalman_filter = None
+        self.detection_confidence = None
         self.filtered_state_means = []
         self.filtered_state_covariances = []
         self.time_since_last_update = 0
