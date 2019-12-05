@@ -97,7 +97,7 @@ def main(argv):
 
 
     plt.figure()
-    plotConfusion('3D', 1.5)
+    #plotConfusion('3D', 1.5)
 
 def show_conf_mat_heatmap(orientation_tuple, title):
     lbls = [0,1,2,3]

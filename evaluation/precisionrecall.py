@@ -92,13 +92,23 @@ def MAP(precision, recall):
     max_p_so_far = 0
 
     rolling_sum = 0
-    for tuple in pr_list:
-        p = max(tuple[0], max_p_so_far)
-        rolling_sum += p
 
-    map = rolling_sum / len(pr_list)
 
-    return map
+    recall_values = list(np.arange(0, 1.001, 0.1))
+    recall_length = len(recall_values)
+    #print(recall_values)
+
+    precision_values = []
+
+    for p, r in pr_list:
+        max_p_so_far = max(p, max_p_so_far)
+
+        if r <= recall_values[-1]:
+            while recall_values and r <= recall_values[-1]:
+                recall_values.pop()
+            precision_values.append(max_p_so_far)
+    #print(precision_values)
+    return sum(precision_values)/recall_length
 
 
 def PR(type='2D', threshold=0.5):
