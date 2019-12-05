@@ -48,10 +48,7 @@ class MultiOnlineKalman:
         filters_to_remove = set()
         for idx, filt in enumerate(self.filter_list):
             if filt not in taken_filter_set:
-                filt.detection_confidence -= 0.00
-                if filt.detection_confidence < 0:
-                    filt.detection_confidence = 0
-                    filters_to_remove.add(filt)
+                filt.detection_confidence *= 0.3
 
             if filt.time_since_last_update > 3:
                 filters_to_remove.add(filt)
@@ -63,12 +60,12 @@ class MultiOnlineKalman:
             if filt not in taken_filter_set:
                 corrected_state, _ = self.filter_list[idx].take_observation(None, None, None)
                 corrected_results.append([corrected_state[0], corrected_state[2], corrected_state[4]])
-                corrected_confidences.append(0.01)
+                corrected_confidences.append(filt.detection_confidence)
 
 
         return corrected_results, corrected_confidences
 
-    def find_matching_filter_index(self, observation, taken_filter_set, distance_cap=2):
+    def find_matching_filter_index(self, observation, taken_filter_set, distance_cap=1):
         closest_index = None
         closest_dist = math.inf
 
