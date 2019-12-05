@@ -94,21 +94,24 @@ def MAP(precision, recall):
     rolling_sum = 0
 
 
-    recall_values = list(np.arange(0, 1.001, 0.1))
+    recall_values = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
     recall_length = len(recall_values)
-    #print(recall_values)
+    print(recall_values)
 
     precision_values = []
 
-    for p, r in pr_list:
-        max_p_so_far = max(p, max_p_so_far)
 
-        if r <= recall_values[-1]:
-            while recall_values and r <= recall_values[-1]:
-                recall_values.pop()
-            precision_values.append(max_p_so_far)
-    #print(precision_values)
-    return sum(precision_values)/recall_length
+    for recall_value in recall_values:
+        index = 0
+        while index < len(pr_list) and pr_list[index][1] > recall_value:
+            max_p_so_far = max(pr_list[index][0], max_p_so_far)
+            index += 1
+        precision_values.append(max_p_so_far)
+
+
+    assert(len(precision_values) == 11)
+    print(precision_values)
+    return sum(precision_values)/len(precision_values)
 
 
 def PR(type='2D', threshold=0.5):
