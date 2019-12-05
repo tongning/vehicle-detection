@@ -42,20 +42,20 @@ class MultiOnlineKalman:
         print("Percentage of filters matched: {}; {}/{}".format(len(taken_filter_set)/len(self.filter_list),len(taken_filter_set), len(self.filter_list)))
 
 
-        
+
         filters_to_remove = []
         for idx, filt in enumerate(self.filter_list):
             if filt not in taken_filter_set:
-                filt.detection_confidence -= 0.1
+                filt.detection_confidence -= 0.05
                 if filt.detection_confidence < 0:
                     filt.detection_confidence = 0
-                
-            
-            if filt.time_since_last_update > 1:
+                    filters_to_remove.append(filt)
+
+            if filt.time_since_last_update > 10:
                 filters_to_remove.append(filt)
         for filt in filters_to_remove:
             self.filter_list.remove(filt)
-        
+
 
         for idx, filt in enumerate(self.filter_list):
             if filt not in taken_filter_set:
@@ -63,7 +63,7 @@ class MultiOnlineKalman:
                 corrected_results.append([corrected_state[0], corrected_state[2], corrected_state[4]])
                 corrected_confidences.append(filt.detection_confidence)
 
-        
+
         return corrected_results, corrected_confidences
 
     def find_matching_filter_index(self, observation, taken_filter_set, distance_cap=8):

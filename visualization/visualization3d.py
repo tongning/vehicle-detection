@@ -28,6 +28,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import cv2
 import open3d as o3d
 import pickle
+import time
 
 SCALE_FACTOR = 100
 
@@ -65,9 +66,9 @@ def PlaySequence(sequence_name):
         prediction_frame_data = loadFrameData(prediction_file_path)
         groundtruth_frame_data = loadFrameData(groundtruth_file_path)
 
-        pc = prediction_frame_data['point_cloud']
-        scaled_pc = np.clip(pc * SCALE_FACTOR, -10000, 10000)
-        pcd.points = o3d.utility.Vector3dVector(np.int16(scaled_pc))
+        #pc = prediction_frame_data['point_cloud']
+        #scaled_pc = np.clip(pc * SCALE_FACTOR, -10000, 10000)
+        #pcd.points = o3d.utility.Vector3dVector(np.int16(scaled_pc))
 
         # clear old bounding boxes --------
         for bbox in bounding_boxes:
@@ -113,6 +114,7 @@ def PlaySequence(sequence_name):
         vis.update_renderer()
         vis.update_geometry()
         i += 1
+        time.sleep(0.25)
 
 
 

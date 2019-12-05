@@ -76,7 +76,7 @@ def main(argv):
     #plt.plot(r_hard, p_hard, 'b')
     plotPR('3D', 1.5, 'r')
     #plotPR('2D', 0.7, 'b')
-    plotConfusion('2D', 0.7)
+    #plotConfusion('2D', 0.7)
 
     axes = plt.gca()
     axes.set_xlim([0, 1.2])
