@@ -82,12 +82,22 @@ def main(argv):
     axes.set_xlim([0, 1.2])
     axes.set_ylim([0, 1.2])
 
+    #plotPR('3D', 1.5, 'r')
+    #plotPR('3D', 3, 'b')
+    #plotPR('2D', 0.7, 'b')
+
+
+
     plt.xlabel('Recall', fontsize=14)
     plt.ylabel('Precision', fontsize=14)
     plt.xlim(0,1.0)
     plt.ylim(0,1.05)
     plt.title('Precision-Recall curve for each IoU threshold (blue)\n and distance threshold (red)')
     plt.show()
+
+
+    plt.figure()
+    plotConfusion('3D', 1.5)
 
 def show_conf_mat_heatmap(orientation_tuple, title):
     lbls = [0,1,2,3]
