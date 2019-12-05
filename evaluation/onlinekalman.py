@@ -13,7 +13,7 @@ class MultiOnlineKalman:
     def distance(self, pos1, pos2):
         return math.sqrt((pos1[0]-pos2[0])**2+(pos1[1]-pos2[1])**2+(pos1[2]-pos2[2])**2)
 
-    def take_multiple_observations(self, observations, detection_confidences, use_detection_confidence=False):
+    def take_multiple_observations(self, observations, detection_confidences):
 
         taken_filter_set = set()
         corrected_results = []
@@ -24,10 +24,9 @@ class MultiOnlineKalman:
             if matching_filter_index is None:
                 new_filter = OnlineKalman()
                 corrected_state, _ = new_filter.take_observation(observation[0], observation[1], observation[2])
-                if use_detection_confidence:
-                    new_filter.detection_confidence = detection_confidences[idx]
-                else:
-                    new_filter.detection_confidence = 0.01
+
+                new_filter.detection_confidence = detection_confidences[idx]
+
                 self.filter_list.append(new_filter)
                 taken_filter_set.add(new_filter)
                 corrected_results.append(observation)
@@ -64,12 +63,12 @@ class MultiOnlineKalman:
             if filt not in taken_filter_set:
                 corrected_state, _ = self.filter_list[idx].take_observation(None, None, None)
                 corrected_results.append([corrected_state[0], corrected_state[2], corrected_state[4]])
-                corrected_confidences.append(filt.detection_confidence)
+                corrected_confidences.append(0.01)
 
 
         return corrected_results, corrected_confidences
 
-    def find_matching_filter_index(self, observation, taken_filter_set, distance_cap=1):
+    def find_matching_filter_index(self, observation, taken_filter_set, distance_cap=2):
         closest_index = None
         closest_dist = math.inf
 
