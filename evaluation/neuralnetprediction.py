@@ -31,7 +31,7 @@ class NetworkModel:
 
         self.tfnet = TFNet(options)
 
-    def PredictFrame(self, sequence_name, image_name, filter_type='kalman', add_old_detections=True, filter_high_confidence_only=False):
+    def PredictFrame(self, sequence_name, image_name, filter_type=None, add_old_detections=True, filter_high_confidence_only=False):
         print("----------------------")
         #directory_l = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_02/", sequence_name)
         #directory_r = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_03/", sequence_name)

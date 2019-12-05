@@ -43,16 +43,16 @@ class MultiOnlineKalman:
 
 
 
-        filters_to_remove = []
+        filters_to_remove = set()
         for idx, filt in enumerate(self.filter_list):
             if filt not in taken_filter_set:
                 filt.detection_confidence -= 0.05
                 if filt.detection_confidence < 0:
                     filt.detection_confidence = 0
-                    filters_to_remove.append(filt)
+                    filters_to_remove.add(filt)
 
             if filt.time_since_last_update > 10:
-                filters_to_remove.append(filt)
+                filters_to_remove.add(filt)
         for filt in filters_to_remove:
             self.filter_list.remove(filt)
 
