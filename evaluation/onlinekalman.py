@@ -68,7 +68,7 @@ class MultiOnlineKalman:
 
         return corrected_results, corrected_confidences
 
-    def find_matching_filter_index(self, observation, taken_filter_set, distance_cap=2):
+    def find_matching_filter_index(self, observation, taken_filter_set, distance_cap=1):
         closest_index = None
         closest_dist = math.inf
 
