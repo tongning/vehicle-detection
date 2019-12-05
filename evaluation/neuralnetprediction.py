@@ -17,10 +17,11 @@ import pickle
 from StereoDepth import *
 import visualization2d
 from onlinekalman import OnlineKalman, MultiOnlineKalman
+from particlefilter import ParticleFilter, MultiOnlineParticleFilter
 
 class NetworkModel:
     def __init__(self):
-        self.kalmanfilter = None
+        self.filt = None
         self.vd_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
         os.chdir(self.vd_directory)
         os.chdir("darkflow")
@@ -31,7 +32,7 @@ class NetworkModel:
 
         self.tfnet = TFNet(options)
 
-    def PredictFrame(self, sequence_name, image_name, filter_type='kalman', add_old_detections=True, filter_high_confidence_only=False):
+    def PredictFrame(self, sequence_name, image_name, filter_type='particle', add_old_detections=True, filter_high_confidence_only=False):
         #print("----------------------")
         #directory_l = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_02/", sequence_name)
         #directory_r = os.path.join(self.vd_directory, "data/KITTI-tracking/training/image_03/", sequence_name)
@@ -60,9 +61,13 @@ class NetworkModel:
             index += 1
 
         if filter_type == 'kalman':
-            if self.kalmanfilter is None or self.kalmanfilter.sequence_name != sequence_name:
-                self.kalmanfilter = MultiOnlineKalman(sequence_name)
-            filtered_object_3d_positions, confidences = self.kalmanfilter.take_multiple_observations(raw_object_3d_positions, raw_confidences)
+            if self.filt is None or self.filt.sequence_name != sequence_name:
+                self.filt = MultiOnlineKalman(sequence_name)
+            filtered_object_3d_positions, confidences = self.filt.take_multiple_observations(raw_object_3d_positions, raw_confidences)
+        elif filter_type == 'particle':
+            if self.filt is None or self.filt.sequence_name != sequence_name:
+                self.filt = MultiOnlineParticleFilter(sequence_name)
+            filtered_object_3d_positions, confidences = self.filt.take_multiple_observations(raw_object_3d_positions, raw_confidences)
 
         index = 0
         filtered_positions_index = 0
@@ -71,7 +76,7 @@ class NetworkModel:
             tracked_object['bbox'] = {'left': predicted_box['topleft']['x'], 'top': predicted_box['topleft']['y'], 'right': predicted_box['bottomright']['x'], 'bottom': predicted_box['bottomright']['y']}
             tracked_object['confidence'] = predicted_box['confidence']
             tracked_object['type'] = predicted_box['label']
-            if filter_type == 'kalman' and (not filter_high_confidence_only or index in high_confidence_indexes):
+            if filter_type is not None and (not filter_high_confidence_only or index in high_confidence_indexes):
                 tracked_object['3dbbox_loc'] = filtered_object_3d_positions[filtered_positions_index]
                 filtered_positions_index += 1
             else:
@@ -83,7 +88,7 @@ class NetworkModel:
                 #print(predicted_3d_position)
             index += 1
 
-        if filter_type == 'kalman' and add_old_detections:
+        if filter_type is not None and add_old_detections:
             while filtered_positions_index < len(filtered_object_3d_positions):
                 tracked_object = {}
                 tracked_object['bbox'] = {'left': 0, 'top': 0, 'right': 0, 'bottom': 0}
