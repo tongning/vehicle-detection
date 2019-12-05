@@ -41,7 +41,7 @@ class MultiOnlineKalman:
                     corrected_results.append([corrected_state[0], corrected_state[2], corrected_state[4]])
                 corrected_confidences.append(detection_confidences[idx])
 
-        print("Percentage of filters matched: {}; {}/{}".format(len(taken_filter_set)/len(self.filter_list),len(taken_filter_set), len(self.filter_list)))
+        #print("Percentage of filters matched: {}; {}/{}".format(len(taken_filter_set)/len(self.filter_list),len(taken_filter_set), len(self.filter_list)))
 
 
 
