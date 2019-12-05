@@ -96,8 +96,6 @@ def MAP(precision, recall):
 
     recall_values = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0]
     recall_length = len(recall_values)
-    print(recall_values)
-
     precision_values = []
 
 
@@ -110,7 +108,6 @@ def MAP(precision, recall):
 
 
     assert(len(precision_values) == 11)
-    print(precision_values)
     return sum(precision_values)/len(precision_values)
 
 
