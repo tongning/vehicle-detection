@@ -13,7 +13,7 @@ class MultiOnlineKalman:
     def distance(self, pos1, pos2):
         return math.sqrt((pos1[0]-pos2[0])**2+(pos1[1]-pos2[1])**2+(pos1[2]-pos2[2])**2)
 
-    def take_multiple_observations(self, observations, detection_confidences):
+    def take_multiple_observations(self, observations, detection_confidences, use_detection_confidence=False):
 
         taken_filter_set = set()
         corrected_results = []
@@ -24,7 +24,10 @@ class MultiOnlineKalman:
             if matching_filter_index is None:
                 new_filter = OnlineKalman()
                 corrected_state, _ = new_filter.take_observation(observation[0], observation[1], observation[2])
-                new_filter.detection_confidence = detection_confidences[idx]
+                if use_detection_confidence:
+                    new_filter.detection_confidence = detection_confidences[idx]
+                else:
+                    new_filter.detection_confidence = 0.01
                 self.filter_list.append(new_filter)
                 taken_filter_set.add(new_filter)
                 corrected_results.append(observation)
@@ -46,12 +49,12 @@ class MultiOnlineKalman:
         filters_to_remove = set()
         for idx, filt in enumerate(self.filter_list):
             if filt not in taken_filter_set:
-                filt.detection_confidence -= 0.05
+                filt.detection_confidence -= 0.00
                 if filt.detection_confidence < 0:
                     filt.detection_confidence = 0
                     filters_to_remove.add(filt)
 
-            if filt.time_since_last_update > 10:
+            if filt.time_since_last_update > 3:
                 filters_to_remove.add(filt)
         for filt in filters_to_remove:
             self.filter_list.remove(filt)
@@ -66,7 +69,7 @@ class MultiOnlineKalman:
 
         return corrected_results, corrected_confidences
 
-    def find_matching_filter_index(self, observation, taken_filter_set, distance_cap=8):
+    def find_matching_filter_index(self, observation, taken_filter_set, distance_cap=1):
         closest_index = None
         closest_dist = math.inf
 
