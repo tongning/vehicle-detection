@@ -27,7 +27,7 @@ def TPFP2D(predictions, groundtruth, iou_threshold=0.5):
 
         if min_distance >= iou_threshold:
             gt_objects.remove(gt_object)
-            results.append((tracked_object['confidence'], 'TP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty'], gt_object, int(tracked_object['type'].split('_')[1])))
+            results.append((tracked_object['confidence'], 'TP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty'], int(groundtruth['tracked_objects'][gt_object]['type'].split('_')[1]), int(tracked_object['type'].split('_')[1])))
         else:
             results.append((tracked_object['confidence'], 'FP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty']))
     return results
@@ -54,7 +54,7 @@ def TPFP3D(predictions, groundtruth, distance_threshold=5):
         if min_distance <= distance_threshold:
             gt_objects.remove(gt_object)
             #used_gt_objects.add(gt_index)
-            results.append((tracked_object['confidence'], 'TP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty'], gt_object, int(tracked_object['type'].split('_')[1])))
+            results.append((tracked_object['confidence'], 'TP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty'], int(groundtruth['tracked_objects'][gt_object]['type'].split('_')[1]), int(tracked_object['type'].split('_')[1])))
         else:
             results.append((tracked_object['confidence'], 'FP', min_distance, groundtruth['tracked_objects'][gt_object]['difficulty']))
     return results
@@ -117,10 +117,6 @@ def PR(type='2D', threshold=0.5):
                     TPFP_table += TPFP2D(prediction, groundtruth, threshold)
                 else: # 3d position precision-recall
                     TPFP_table += TPFP3D(prediction, groundtruth, threshold)
-
-        print(easy_counts)
-        print(medium_counts)
-        print(hard_counts)
 
         TPFP_table.sort(reverse=True) # Sort by descending confidence
         TP_easy = 0 # True positive counts
