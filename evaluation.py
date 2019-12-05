@@ -16,19 +16,80 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sn
 import pandas as pd
 
-
-def plotPR(mode = '3D', threshold = 1.5, color = 'r'):
+def plotDifficulty(mode = '3D', threshold = 1.5):
     p_easy, r_easy, p_medium, r_medium, p_hard, r_hard, _ = PR(mode, threshold)
-    plt.plot(r_easy, p_easy, linestyle = '-', color=color)
-    print("MAP: {0}".format(MAP(p_easy, r_easy)))
-    plt.plot(r_medium, p_medium, linestyle = '--', color=color)
-    print("MAP: {0}".format(MAP(p_medium, r_medium)))
-    plt.plot(r_hard, p_hard, linestyle = ':', color=color)
-    print("MAP: {0}".format(MAP(p_hard, r_hard)))
+    easy, = plt.plot(r_easy, p_easy, color='r')
+    #print("MAP: {0}".format(MAP(p_easy, r_easy)))
+    med, = plt.plot(r_medium, p_medium, color='g')
+    #print("MAP: {0}".format(MAP(p_medium, r_medium)))
+    hard, = plt.plot(r_hard, p_hard, color='b')
+    #print("MAP: {0}".format(MAP(p_hard, r_hard)))
 
-def plotConfusion(mode = '3D', threshold = 1.5):
-    _, _, _, _, _, _, orientations = PR(mode, threshold)
-    show_conf_mat_heatmap(orientations, mode + " " + str(threshold))
+    plt.xlabel('Recall', fontsize=14)
+    plt.ylabel('Precision', fontsize=14)
+    plt.title("AUPRC for each KITTI difficulty @ {0}m, 3D".format(threshold))
+    plt.xlim(0,1.0)
+    plt.ylim(0,1.05)
+
+    plt.legend((easy, med, hard), ("Easy", "Medium", "Hard"))
+
+    plt.savefig("AUPRC_Difficulty.png", bbox_inches='tight')
+    plt.show()
+
+def plotDistance(mode = '3D'):
+    p10, r10, _ = PR(mode, 10, False)
+    p5, r5, _ = PR(mode, 5, False)
+    p3, r3, _ = PR(mode, 3, False)
+    p15, r15, _ = PR(mode, 1.5, False)
+
+    plt1, = plt.plot(r10, p10, color='r')
+    plt2, = plt.plot(r5, p5, color = 'g')
+    plt3, = plt.plot(r3, p3, color = 'b')
+    plt4, = plt.plot(r15, p15, color = 'purple')
+
+    plt.xlabel('Recall', fontsize=14)
+    plt.ylabel('Precision', fontsize=14)
+    plt.title("AUPRC for different distance thresholds, 3D")
+    plt.xlim(0,1.0)
+    plt.ylim(0,1.05)
+
+    plt.legend((plt1, plt2, plt3, plt4), ("10m", "5m", "3m", "1.5m"))
+
+    plt.savefig("AUPRC_Distance.png", bbox_inches='tight')
+    plt.show()
+
+def plotOrientation(mode = '3D', threshold = 1.5):
+    _, _, orientation = PR(mode, threshold, False)
+    word_lbls = ["front","l-diag","side","r-diag"]
+    lbls = [0,1,2,3]
+    conf_mat = confusion_matrix(orientation[0], orientation[1], labels = lbls)
+    df = pd.DataFrame(conf_mat, word_lbls, word_lbls)
+    sn.heatmap(df, annot=True, fmt='g')
+    plt.xlabel("Predictions")
+    plt.ylabel("Ground Truth")
+    plt.title("Confusion Matrix orientations at {0}m, 3D".format(threshold))
+
+    plt.savefig("Orientation_ConfusionMatrix.png", bbox_inches='tight')
+    plt.show()
+
+def plot2DComparison(threshold = 1.5):
+    iou = 0.7
+    p_2D, r_2D, _ = PR('2D', iou, False)
+    p_3D, r_3D, _ = PR('3D', threshold, False)
+
+    plt1, = plt.plot(r_2D, p_2D, color = 'r')
+    plt2, = plt.plot(r_3D, p_3D, color = 'b')
+
+
+    plt.xlabel('Recall', fontsize=14)
+    plt.ylabel('Precision', fontsize=14)
+    plt.title("AUPRC for 2D ({0} IoU) and 3D ({1}m distance)".format(iou, threshold))
+    plt.xlim(0,1.0)
+    plt.ylim(0,1.05)
+
+    plt.legend((plt1, plt2), ("2D", "3D"))
+    plt.savefig("AUPRC_2Dvs3D.png", bbox_inches='tight')
+    plt.show()
 
 
 def main(argv):
@@ -74,13 +135,10 @@ def main(argv):
     #plt.plot(r_easy, p_easy, 'r')
     #plt.plot(r_medium, p_medium, 'g')
     #plt.plot(r_hard, p_hard, 'b')
-    plotPR('3D', 1.5, 'r')
+    #plotPR('3D', 1.5, 'r')
     #plotPR('2D', 0.7, 'b')
     #plotConfusion('2D', 0.7)
 
-    axes = plt.gca()
-    axes.set_xlim([0, 1.2])
-    axes.set_ylim([0, 1.2])
 
     #plotPR('3D', 1.5, 'r')
     #plotPR('3D', 3, 'b')
@@ -88,26 +146,22 @@ def main(argv):
 
 
 
-    plt.xlabel('Recall', fontsize=14)
-    plt.ylabel('Precision', fontsize=14)
-    plt.xlim(0,1.0)
-    plt.ylim(0,1.05)
-    plt.title('Precision-Recall curve for each IoU threshold (blue)\n and distance threshold (red)')
-    plt.show()
-
-
-    plt.figure()
+    # plt.xlabel('Recall', fontsize=14)
+    # plt.ylabel('Precision', fontsize=14)
+    # plt.xlim(0,1.0)
+    # plt.ylim(0,1.05)
+    # plt.title('Precision-Recall curve for each IoU threshold (blue)\n and distance threshold (red)')
+    # plt.show()
+    #
+    #
+    # plt.figure()
     #plotConfusion('3D', 1.5)
 
-def show_conf_mat_heatmap(orientation_tuple, title):
-    lbls = [0,1,2,3]
-    conf_mat = confusion_matrix(orientation_tuple[0], orientation_tuple[1], labels = lbls)
-    df = pd.DataFrame(conf_mat, lbls, lbls)
-    sn.heatmap(df, annot=True, fmt='g')
-    plt.xlabel("Predictions")
-    plt.ylabel("Ground Truth")
-    plt.title("Confusion Matrix orientations at " + title)
-    plt.show()
+    plotDifficulty()
+    plotDistance()
+    plotOrientation()
+    plot2DComparison()
+
 
 if __name__ == '__main__':
     main(sys.argv)

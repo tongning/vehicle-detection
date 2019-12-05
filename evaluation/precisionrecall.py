@@ -114,13 +114,14 @@ def MAP(precision, recall):
     return sum(precision_values)/len(precision_values)
 
 
-def PR(type='2D', threshold=0.5):
+def PR(type='2D', threshold=0.5, track_difficulty = True):
         units = str(threshold*100) + ' %' if type == '2D' else str(threshold) + ' m'
 
         TPFP_table = []
         easy_counts = 0
         medium_counts = 0
         hard_counts = 0
+        counts = 0
 
         for sequence_name in os.listdir('eval'):
             if sequence_name == '.DS_Store':
@@ -137,7 +138,7 @@ def PR(type='2D', threshold=0.5):
                         medium_counts += 1
                     elif gt_object['difficulty'] == 'hard':
                         hard_counts += 1
-
+                    counts += 1
 
                 if type == '2D': # Image space precision-recall
                     TPFP_table += TPFP2D(prediction, groundtruth, threshold)
@@ -151,50 +152,73 @@ def PR(type='2D', threshold=0.5):
         FP_medium = 0
         TP_hard = 0
         FP_hard = 0
+        TP = 0
+        FP = 0
         precision_easy = []
         precision_medium = []
         precision_hard = []
         recall_easy = []
         recall_medium = []
         recall_hard = []
+        precision = []
+        recall = []
 
         y_true = []
         y_pred = []
 
         for pred in TPFP_table:
-            if pred[3] == 'easy':
+            # Difficulty adds
+            if track_difficulty == True:
+                if pred[3] == 'easy':
+                    if pred[1] == 'TP':
+                        TP_easy += 1
+                    else:
+                        FP_easy += 1
+                    p_easy = TP_easy / (TP_easy + FP_easy)
+                    r_easy = TP_easy / easy_counts
+
+                    precision_easy.append(p_easy)
+                    recall_easy.append(r_easy)
+                elif pred[3] == 'medium':
+                    if pred[1] == 'TP':
+                        TP_medium += 1
+                    else:
+                        FP_medium += 1
+                    p_medium = TP_medium / (TP_medium + FP_medium)
+                    r_medium = TP_medium / medium_counts
+
+                    precision_medium.append(p_medium)
+                    recall_medium.append(r_medium)
+                elif pred[3] == 'hard':
+                    if pred[1] == 'TP':
+                        TP_hard += 1
+                    else:
+                        FP_hard += 1
+                    p_hard = TP_hard / (TP_hard + FP_hard)
+                    r_hard = TP_hard / hard_counts
+
+                    precision_hard.append(p_hard)
+                    recall_hard.append(r_hard)
+
+            # Regular adds
+            else:
                 if pred[1] == 'TP':
-                    TP_easy += 1
+                    TP += 1
                 else:
-                    FP_easy += 1
-                p_easy = TP_easy / (TP_easy + FP_easy)
-                r_easy = TP_easy / easy_counts
+                    FP += 1
 
-                precision_easy.append(p_easy)
-                recall_easy.append(r_easy)
-            elif pred[3] == 'medium':
-                if pred[1] == 'TP':
-                    TP_medium += 1
-                else:
-                    FP_medium += 1
-                p_medium = TP_medium / (TP_medium + FP_medium)
-                r_medium = TP_medium / medium_counts
+                p = TP / (TP + FP)
+                r = TP / counts
 
-                precision_medium.append(p_medium)
-                recall_medium.append(r_medium)
-            elif pred[3] == 'hard':
-                if pred[1] == 'TP':
-                    TP_hard += 1
-                else:
-                    FP_hard += 1
-                p_hard = TP_hard / (TP_hard + FP_hard)
-                r_hard = TP_hard / hard_counts
+                precision.append(p)
+                recall.append(r)
 
-                precision_hard.append(p_hard)
-                recall_hard.append(r_hard)
-
+            # For confusion matrix
             if pred[1] == 'TP':
                 y_true.extend([pred[4]])
                 y_pred.extend([pred[5]])
 
-        return precision_easy, recall_easy, precision_medium, recall_medium, precision_hard, recall_hard, (y_true, y_pred)
+        if track_difficulty == True:
+            return precision_easy, recall_easy, precision_medium, recall_medium, precision_hard, recall_hard, (y_true, y_pred)
+        else:
+            return precision, recall, (y_true, y_pred)
