@@ -86,8 +86,21 @@ def IOU(A, B):
 
 # https://research.mapillary.com/img/publications/MonoDIS.pdf
 # Calculate according to MonoDIS paper and KITTI readme
-def MAP():
-    pass
+def MAP(precision, recall):
+
+    pr_list = zip(precision, recall)
+    pr_list = sorted(pr_list, reverse = True, key = lambda x: x[1]) # Reversed?
+
+    max_p_so_far = 0
+
+    rolling_sum = 0
+    for tuple in pr_list:
+        p = max(tuple[0], max_p_so_far)
+        rolling_sum += p
+
+    map = rolling_sum / len(pr_list)
+
+    return map
 
 
 def PR(type='2D', threshold=0.5):

@@ -20,8 +20,11 @@ import pandas as pd
 def plotPR(mode = '3D', threshold = 1.5, color = 'r'):
     p_easy, r_easy, p_medium, r_medium, p_hard, r_hard, _ = PR(mode, threshold)
     plt.plot(r_easy, p_easy, linestyle = '-', color=color)
+    print("MAP: {0}".format(MAP(p_easy, r_easy)))
     plt.plot(r_medium, p_medium, linestyle = '--', color=color)
+    print("MAP: {0}".format(MAP(p_medium, r_medium)))
     plt.plot(r_hard, p_hard, linestyle = ':', color=color)
+    print("MAP: {0}".format(MAP(p_hard, r_hard)))
 
 def plotConfusion(mode = '3D', threshold = 1.5):
     _, _, _, _, _, _, orientations = PR(mode, threshold)
@@ -71,7 +74,7 @@ def main(argv):
     #plt.plot(r_easy, p_easy, 'r')
     #plt.plot(r_medium, p_medium, 'g')
     #plt.plot(r_hard, p_hard, 'b')
-    #plotPR('3D', 1.5, 'r')
+    plotPR('3D', 1.5, 'r')
     #plotPR('2D', 0.7, 'b')
     plotConfusion('2D', 0.7)
 
