@@ -24,14 +24,14 @@ def plotDifficulty(mode = '3D', threshold = 1.5):
 
     plt.xlabel('Recall', fontsize=14)
     plt.ylabel('Precision', fontsize=14)
-    plt.title("AUPRC for each KITTI difficulty @ {0}m, 3D".format(threshold))
+    plt.title("PRC for each KITTI difficulty @ {0}m, 3D".format(threshold))
     plt.xlim(0,1.0)
     plt.ylim(0,1.05)
 
     plt.legend((easy, med, hard), ("Easy", "Medium", "Hard"))
 
     plt.savefig("AUPRC_Difficulty.png", bbox_inches='tight')
-    plt.show()
+    #plt.show()
 
 def plotDistance(mode = '3D'):
     p10, r10, _ = PR(mode, 10, False)
@@ -52,8 +52,8 @@ def plotDistance(mode = '3D'):
 
     plt.legend((plt1, plt2, plt3, plt4), ("10m", "5m", "3m", "1.5m"))
 
-    plt.savefig("AUPRC_Distance.png", bbox_inches='tight')
-    plt.show()
+    plt.savefig("PRC_Distance.png", bbox_inches='tight')
+    #plt.show()
 
 def plotOrientation(mode = '3D', threshold = 1.5):
     _, _, orientation = PR(mode, threshold, False)
@@ -67,7 +67,7 @@ def plotOrientation(mode = '3D', threshold = 1.5):
     plt.title("Confusion Matrix orientations at {0}m, 3D".format(threshold))
 
     plt.savefig("Orientation_ConfusionMatrix.png", bbox_inches='tight')
-    plt.show()
+    #plt.show()
 
 def plot2DComparison(threshold = 1.5):
     iou = 0.7
@@ -85,8 +85,8 @@ def plot2DComparison(threshold = 1.5):
     plt.ylim(0,1.05)
 
     plt.legend((plt1, plt2), ("2D", "3D"))
-    plt.savefig("AUPRC_2Dvs3D.png", bbox_inches='tight')
-    plt.show()
+    plt.savefig("PRC_2Dvs3D.png", bbox_inches='tight')
+    #plt.show()
 
 # Make a table that has the MAP values for each difficulty and for each distance threshold
 def tableMAP():
@@ -121,15 +121,33 @@ def tableMAP():
     fig.tight_layout()
 
     plt.savefig("MAP.png")
-    plt.show()
+    #plt.show()
+
+
+def plotSingle(mode = '3D', threshold = 1.5):
+
+    plt.clf()
+
+    p, r, _ = PR(mode, threshold, False)
+    plt1, = plt.plot(r, p, color='r')
+
+    plt.xlabel('Recall', fontsize=14)
+    plt.ylabel('Precision', fontsize=14)
+    plt.title("AUPRC at {0}".format(threshold))
+    plt.xlim(0,1.0)
+    plt.ylim(0,1.05)
+
+    plt.savefig("PRC_Single.png")
+    #plt.show()
 
 
 def main(argv):
     plotDifficulty()
-    plotDistance()
-    plotOrientation()
-    plot2DComparison()
-    tableMAP()
+    #plotDistance()
+    #plotOrientation()
+    #plot2DComparison()
+    #tableMAP()
+    plotSingle()
 
 
 if __name__ == '__main__':
