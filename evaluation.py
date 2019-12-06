@@ -133,7 +133,7 @@ def plotSingle(mode = '3D', threshold = 1.5):
 
     plt.xlabel('Recall', fontsize=14)
     plt.ylabel('Precision', fontsize=14)
-    plt.title("AUPRC at {0}".format(threshold))
+    plt.title("PRC at {0}".format(threshold))
     plt.xlim(0,1.0)
     plt.ylim(0,1.05)
 
