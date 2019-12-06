@@ -142,12 +142,12 @@ def plotSingle(mode = '3D', threshold = 1.5):
 
 
 def main(argv):
-    plotDifficulty()
-    plotDistance()
-    plotOrientation()
-    plot2DComparison()
+    #plotDifficulty()
+    #plotDistance()
+    #plotOrientation()
+    #plot2DComparison()
     tableMAP()
-    plotSingle()
+    #plotSingle()
 
 
 if __name__ == '__main__':
