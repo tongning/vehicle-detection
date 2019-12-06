@@ -30,7 +30,7 @@ def plotDifficulty(mode = '3D', threshold = 1.5):
 
     plt.legend((easy, med, hard), ("Easy", "Medium", "Hard"))
 
-    plt.savefig("AUPRC_Difficulty.png", bbox_inches='tight')
+    plt.savefig("PRC_Difficulty.png", bbox_inches='tight')
     plt.show()
 
 def plotDistance(mode = '3D'):
@@ -46,7 +46,7 @@ def plotDistance(mode = '3D'):
 
     plt.xlabel('Recall', fontsize=14)
     plt.ylabel('Precision', fontsize=14)
-    plt.title("AUPRC for different distance thresholds, 3D")
+    plt.title("PRC for different distance thresholds, 3D")
     plt.xlim(0,1.0)
     plt.ylim(0,1.05)
 
@@ -81,7 +81,7 @@ def plot2DComparison(threshold = 1.5):
 
     plt.xlabel('Recall', fontsize=14)
     plt.ylabel('Precision', fontsize=14)
-    plt.title("AUPRC for 2D ({0} IoU) and 3D ({1}m distance)".format(iou, threshold))
+    plt.title("PRC for 2D ({0} IoU) and 3D ({1}m distance)".format(iou, threshold))
     plt.xlim(0,1.0)
     plt.ylim(0,1.05)
 
