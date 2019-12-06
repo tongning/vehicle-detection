@@ -31,7 +31,7 @@ def plotDifficulty(mode = '3D', threshold = 1.5):
     plt.legend((easy, med, hard), ("Easy", "Medium", "Hard"))
 
     plt.savefig("AUPRC_Difficulty.png", bbox_inches='tight')
-    #plt.show()
+    plt.show()
 
 def plotDistance(mode = '3D'):
     p10, r10, _ = PR(mode, 10, False)
@@ -53,9 +53,10 @@ def plotDistance(mode = '3D'):
     plt.legend((plt1, plt2, plt3, plt4), ("10m", "5m", "3m", "1.5m"))
 
     plt.savefig("PRC_Distance.png", bbox_inches='tight')
-    #plt.show()
+    plt.show()
 
 def plotOrientation(mode = '3D', threshold = 1.5):
+    plt.clf()
     _, _, orientation = PR(mode, threshold, False)
     word_lbls = ["front","l-diag","side","r-diag"]
     lbls = [0,1,2,3]
@@ -67,7 +68,7 @@ def plotOrientation(mode = '3D', threshold = 1.5):
     plt.title("Confusion Matrix orientations at {0}m, 3D".format(threshold))
 
     plt.savefig("Orientation_ConfusionMatrix.png", bbox_inches='tight')
-    #plt.show()
+    plt.show()
 
 def plot2DComparison(threshold = 1.5):
     iou = 0.7
@@ -121,7 +122,7 @@ def tableMAP():
     fig.tight_layout()
 
     plt.savefig("MAP.png")
-    #plt.show()
+    plt.show()
 
 
 def plotSingle(mode = '3D', threshold = 1.5):
@@ -138,15 +139,15 @@ def plotSingle(mode = '3D', threshold = 1.5):
     plt.ylim(0,1.05)
 
     plt.savefig("PRC_Single.png")
-    #plt.show()
+    plt.show()
 
 
 def main(argv):
-    #plotDifficulty()
+    plotDifficulty()
     #plotDistance()
-    #plotOrientation()
+    plotOrientation()
     #plot2DComparison()
-    tableMAP()
+    #tableMAP()
     #plotSingle()
 
 
