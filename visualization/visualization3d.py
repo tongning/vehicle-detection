@@ -36,7 +36,7 @@ def loadFrameData(filename):
     with open(filename, 'rb') as f:
         return pickle.load(f)
 
-def PlaySequence(sequence_name):
+def PlaySequence(sequence_name, show_point_cloud = True):
     vd_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
     groundtruth_path = os.path.join(vd_directory, 'eval', sequence_name, 'groundtruth')
     prediction_path = os.path.join(vd_directory, 'eval', sequence_name, 'predictions')
@@ -66,9 +66,12 @@ def PlaySequence(sequence_name):
         prediction_frame_data = loadFrameData(prediction_file_path)
         groundtruth_frame_data = loadFrameData(groundtruth_file_path)
 
-        #pc = prediction_frame_data['point_cloud']
-        #scaled_pc = np.clip(pc * SCALE_FACTOR, -10000, 10000)
-        #pcd.points = o3d.utility.Vector3dVector(np.int16(scaled_pc))
+        if show_point_cloud:
+            pc = prediction_frame_data['point_cloud']
+            scaled_pc = np.clip(pc * SCALE_FACTOR, -10000, 10000)
+            pcd.points = o3d.utility.Vector3dVector(np.int16(scaled_pc))
+            #color = [0.2, 0.3, 0.7]
+            #pcd.colors = o3d.utility.Vector3dVector([color for i in range(len(scaled_pc))])
 
         # clear old bounding boxes --------
         for bbox in bounding_boxes:
@@ -84,7 +87,7 @@ def PlaySequence(sequence_name):
         for tracked_object in prediction_frame_data['tracked_objects']:  # frame.positions_3D is a list of positions (multiple if we detect more than one car in the same frame)
             # pos is a list of xyz, e.g. [0.45 3.10 5.0]
             pos = tracked_object['3dbbox_loc']
-            color = [tracked_object['confidence'], 0, 0]
+            color = [0, tracked_object['confidence'], 0]
             bbox = bounding_box(pos, color)
             vis.add_geometry(bbox)  # add bounding box to visualizer
             bounding_boxes.append(bbox)  # add it to line_sets so we can clear it at the next iteration
@@ -96,7 +99,7 @@ def PlaySequence(sequence_name):
             # TODO: Is alpha being used inside bounding_box ?
             #pos = [label[8], label[9], label[10]]
             pos = tracked_object['3dbbox_loc']
-            color = [0, 1, 0]
+            color = [1, 0, 0]
             #bbox = bounding_box(pos, color, label[0])
             bbox = bounding_box(pos, color)
             vis.add_geometry(bbox)
@@ -114,7 +117,7 @@ def PlaySequence(sequence_name):
         vis.update_renderer()
         vis.update_geometry()
         i += 1
-        time.sleep(0.25)
+        #time.sleep(0.75)
 
 
 
